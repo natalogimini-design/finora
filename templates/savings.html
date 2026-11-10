@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Tabungan — FINORA{% endblock %}
+
+{% block content %}
+<div class="page-container">
+
+    <div class="page-header">
+        <span class="eyebrow">FINORA SAVINGS</span>
+        <h1>Tabungan</h1>
+        <p>Pantau rekening dan saldo yang kamu miliki.</p>
+    </div>
+
+    <div class="budget-account-card">
+        <div class="budget-account-top">
+            <div class="budget-account-info">
+                <span class="budget-account-label">Nomor Rekening</span>
+                {% if account %}
+                    <h3 class="budget-account-number">{{ account.account_number or "Nomor rekening belum tersedia" }}</h3>
+                {% else %}
+                    <h3 class="budget-account-number empty">Data rekening belum tersedia</h3>
+                {% endif %}
+            </div>
+            <div class="budget-account-icon"><i class="bi bi-credit-card-2-front"></i></div>
+        </div>
+
+        <div class="budget-account-divider"></div>
+
+        <div class="budget-account-bottom">
+            <div>
+                <span class="budget-account-label">Saldo Rekening</span>
+                <div class="budget-account-balance">
+                    Rp {{ "{:,.0f}".format((account.balance if account else 0) or 0).replace(",", ".") }}
+                </div>
+            </div>
+            <div class="budget-account-status">
+                <i class="bi bi-check-circle-fill"></i>
+                <span>Aktif</span>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,429 @@
+{% extends "base.html" %}
+
+
+{% block title %}
+Budget - FINORA
+{% endblock %}
+
+
+{% block content %}
+
+<div class="page-container">
+
+
+    <!-- =====================================================
+         PAGE HEADER
+    ====================================================== -->
+
+    <div class="page-header">
+
+        <div>
+
+            <span class="page-eyebrow">
+                FINORA
+            </span>
+
+            <h1>
+                Budget
+            </h1>
+
+            <p>
+                Atur batas pengeluaran dan pantau kondisi
+                keuanganmu.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         FLASH MESSAGE
+    ====================================================== -->
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+
+        {% if messages %}
+
+            <div class="budget-flash-wrapper">
+
+                {% for category, message in messages %}
+
+                    <div
+                        class="budget-flash
+                        {% if category == 'success' %}
+                            budget-flash-success
+                        {% else %}
+                            budget-flash-error
+                        {% endif %}"
+                    >
+
+                        {% if category == "success" %}
+
+                            <i class="bi bi-check-circle-fill"></i>
+
+                        {% else %}
+
+                            <i class="bi bi-exclamation-circle-fill"></i>
+
+                        {% endif %}
+
+                        <span>
+                            {{ message }}
+                        </span>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        {% endif %}
+
+    {% endwith %}
+
+
+    <!-- =====================================================
+         ACCOUNT CARD
+    ====================================================== -->
+
+    <section class="budget-account-card">
+
+
+        <!-- HEADER -->
+
+        <div class="budget-account-header">
+
+            <div>
+
+                <span class="budget-account-eyebrow">
+                    REKENING UTAMA
+                </span>
+
+                <h2 class="budget-account-title">
+                    FINORA Account
+                </h2>
+
+            </div>
+
+
+            <div class="budget-account-icon">
+
+                <i class="bi bi-bank2"></i>
+
+            </div>
+
+        </div>
+
+
+        {% if account %}
+
+
+            <!-- =============================================
+                 NOMOR REKENING
+            ============================================== -->
+
+            <div class="budget-account-number-box">
+
+                <span class="budget-account-label">
+                    Nomor Rekening
+                </span>
+
+
+                <div class="budget-account-number-row">
+
+                    <strong class="budget-account-number">
+                        {{ account.account_number }}
+                    </strong>
+
+
+                    <span class="budget-account-active">
+
+                        <i class="bi bi-check-circle-fill"></i>
+
+                        Aktif
+
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <!-- =============================================
+                 SALDO
+            ============================================== -->
+
+            <div class="budget-account-bottom">
+
+
+                <div class="budget-account-balance-box">
+
+                    <span class="budget-account-label">
+                        Saldo Saat Ini
+                    </span>
+
+
+                    <strong class="budget-account-balance">
+
+                        Rp
+                        {{ "{:,.0f}".format(account.balance or 0) }}
+
+                    </strong>
+
+                </div>
+
+
+                <div class="budget-account-status">
+
+                    <i class="bi bi-shield-check"></i>
+
+                    <span>
+                        Rekening terhubung
+                    </span>
+
+                </div>
+
+
+            </div>
+
+
+        {% else %}
+
+
+            <!-- =============================================
+                 REKENING BELUM ADA
+            ============================================== -->
+
+            <div class="budget-account-empty">
+
+
+                <div class="budget-account-empty-icon">
+
+                    <i class="bi bi-wallet2"></i>
+
+                </div>
+
+
+                <div>
+
+                    <h3>
+                        Data rekening belum tersedia
+                    </h3>
+
+                    <p>
+                        Nomor rekening dan saldo belum
+                        ditemukan untuk akun ini.
+                    </p>
+
+                </div>
+
+
+            </div>
+
+
+        {% endif %}
+
+    </section>
+
+
+    <!-- =====================================================
+         BUDGET SECTION
+    ====================================================== -->
+
+    <section class="dashboard-section">
+
+
+        <div class="section-heading">
+
+            <div>
+
+                <span class="section-eyebrow">
+                    FINANCIAL CONTROL
+                </span>
+
+                <h2>
+                    Batas Pengeluaran
+                </h2>
+
+                <p>
+                    Tentukan batas pengeluaran agar
+                    keuangan tetap terkendali.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             CURRENT BUDGET
+        ================================================== -->
+
+        {% if budget %}
+
+        <div class="budget-current-card">
+
+            <div class="budget-current-icon">
+
+                <i class="bi bi-speedometer2"></i>
+
+            </div>
+
+
+            <div class="budget-current-info">
+
+                <span>
+                    Budget Saat Ini
+                </span>
+
+                <strong>
+
+                    Rp
+                    {{ "{:,.0f}".format(
+                        budget.budget_limit or 0
+                    ) }}
+
+                </strong>
+
+                <small>
+
+                    {% if budget.budget_period == "weekly" %}
+
+                        Periode mingguan
+
+                    {% else %}
+
+                        Periode bulanan
+
+                    {% endif %}
+
+                </small>
+
+            </div>
+
+        </div>
+
+        {% endif %}
+
+
+        <!-- =================================================
+             FORM BUDGET
+        ================================================== -->
+
+        <div class="form-card">
+
+
+            <form
+                method="POST"
+                action="{{ url_for('budget.budget_page') }}"
+            >
+
+
+                <!-- =========================================
+                     LIMIT
+                ========================================== -->
+
+                <div class="form-group">
+
+                    <label for="budget_limit">
+                        Batas Pengeluaran
+                    </label>
+
+
+                    <div class="money-input">
+
+                        <span>
+                            Rp
+                        </span>
+
+
+                        <input
+                            type="number"
+                            id="budget_limit"
+                            name="budget_limit"
+                            min="0"
+                            step="1000"
+                            placeholder="Contoh: 1000000"
+
+                            {% if budget %}
+                                value="{{ budget.budget_limit }}"
+                            {% endif %}
+
+                            required
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <!-- =========================================
+                     PERIOD
+                ========================================== -->
+
+                <div class="form-group">
+
+                    <label for="budget_period">
+                        Periode Budget
+                    </label>
+
+
+                    <select
+                        id="budget_period"
+                        name="budget_period"
+                        class="finora-select"
+                    >
+
+                        <option
+                            value="monthly"
+                            {% if budget and budget.budget_period == "monthly" %}
+                                selected
+                            {% endif %}
+                        >
+                            Bulanan
+                        </option>
+
+
+                        <option
+                            value="weekly"
+                            {% if budget and budget.budget_period == "weekly" %}
+                                selected
+                            {% endif %}
+                        >
+                            Mingguan
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- =========================================
+                     SUBMIT
+                ========================================== -->
+
+                <button
+                    type="submit"
+                    class="primary-button"
+                >
+
+                    <i class="bi bi-check2-circle"></i>
+
+                    Simpan Budget
+
+                </button>
+
+
+            </form>
+
+
+        </div>
+
+
+    </section>
+
+
+</div>
+
+{% endblock %}

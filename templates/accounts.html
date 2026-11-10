@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Rekening - FINORA</title>
+</head>
+
+<body>
+
+    <h1>Rekening FINORA</h1>
+
+    {% if account %}
+
+        <p>Nomor Rekening</p>
+        <h2>{{ account.account_number }}</h2>
+
+        <p>Saldo</p>
+        <h2>
+            Rp {{ "{:,.0f}".format(account.balance) }}
+        </h2>
+
+    {% else %}
+
+        <p>Rekening belum ditemukan.</p>
+
+    {% endif %}
+
+</body>
+</html>

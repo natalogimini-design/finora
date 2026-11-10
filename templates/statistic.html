@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+
+{% block title %}
+FINORA — Statistik
+{% endblock %}
+
+
+{% block content %}
+
+<div class="dashboard">
+
+    <section class="dashboard-heading">
+
+        <span class="eyebrow">
+            FINORA ANALYTICS
+        </span>
+
+        <h1>
+            Statistik Keuangan
+        </h1>
+
+        <p>
+            Lihat perkembangan keuanganmu secara ringkas.
+        </p>
+
+    </section>
+
+
+    <!-- RINGKASAN -->
+
+    <section class="quick-menu">
+
+        <div class="quick-item">
+
+            <small>
+                Total transaksi
+            </small>
+
+            <strong>
+                Rp {{ "{:,.0f}".format(total_transactions) }}
+            </strong>
+
+        </div>
+
+
+        <div class="quick-item">
+
+            <small>
+                Jumlah transaksi
+            </small>
+
+            <strong>
+                {{ transaction_count }}
+            </strong>
+
+        </div>
+
+
+        <div class="quick-item">
+
+            <small>
+                Target tabungan
+            </small>
+
+            <strong>
+                Rp {{ "{:,.0f}".format(total_target) }}
+            </strong>
+
+        </div>
+
+
+        <div class="quick-item">
+
+            <small>
+                Sudah terkumpul
+            </small>
+
+            <strong>
+                Rp {{ "{:,.0f}".format(total_saved) }}
+            </strong>
+
+        </div>
+
+    </section>
+
+
+    <!-- TABUNGAN -->
+
+    <section class="dashboard-section">
+
+        <div class="section-heading">
+
+            <div>
+
+                <span class="eyebrow">
+                    TABUNGAN
+                </span>
+
+                <h2>
+                    {{ savings_progress }}%
+                </h2>
+
+            </div>
+
+        </div>
+
+
+        <p>
+            Progress seluruh target tabungan.
+        </p>
+
+
+        <div
+            style="
+                width:100%;
+                height:12px;
+                background:#202331;
+                border-radius:20px;
+                overflow:hidden;
+            "
+        >
+
+            <div
+                style="
+                    width:{{ savings_progress }}%;
+                    height:100%;
+                    background:currentColor;
+                "
+            ></div>
+
+        </div>
+
+    </section>
+
+
+    <!-- BULANAN -->
+
+    <section class="dashboard-section">
+
+        <div class="section-heading">
+
+            <div>
+
+                <span class="eyebrow">
+                    PERKEMBANGAN
+                </span>
+
+                <h2>
+                    6 bulan terakhir
+                </h2>
+
+            </div>
+
+        </div>
+
+
+        <div class="transaction-card">
+
+            {% for item in monthly %}
+
+            <div class="transaction-row">
+
+                <div class="transaction-info">
+
+                    <strong>
+                        {{ item.month }}/{{ item.year }}
+                    </strong>
+
+                </div>
+
+
+                <div class="transaction-amount">
+
+                    Rp
+                    {{ "{:,.0f}".format(item.total or 0) }}
+
+                </div>
+
+            </div>
+
+            {% else %}
+
+            <div class="empty-state">
+
+                <strong>
+                    Belum ada data statistik
+                </strong>
+
+                <p>
+                    Data akan muncul setelah terdapat transaksi.
+                </p>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+    </section>
+
+
+    <!-- BATAS -->
+
+    <section class="info-banner">
+
+        <div class="info-icon">
+            ◒
+        </div>
+
+        <div>
+
+            <strong>
+                Batas pengeluaran bulan ini
+            </strong>
+
+            <p>
+                Rp {{ "{:,.0f}".format(budget_limit) }}
+            </p>
+
+        </div>
+
+    </section>
+
+</div>
+
+{% endblock %}

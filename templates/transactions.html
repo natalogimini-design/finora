@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}
+FINORA — Transaksi
+{% endblock %}
+
+
+{% block content %}
+
+<div class="page-container">
+
+    <section class="page-header">
+        <span class="eyebrow">FINORA TRANSAKSI</span>
+        <h1>Riwayat transaksi</h1>
+        <p>Daftar transfer masuk dan keluar pada rekening kamu.</p>
+    </section>
+
+
+    <section class="mini-balance-card">
+        <div>
+            <span>Total masuk</span>
+            <strong style="color: var(--success);">
+                Rp {{ "{:,.0f}".format(total_in or 0).replace(",", ".") }}
+            </strong>
+        </div>
+        <div>
+            <span>Total keluar</span>
+            <strong style="color: var(--danger);">
+                Rp {{ "{:,.0f}".format(total_out or 0).replace(",", ".") }}
+            </strong>
+        </div>
+    </section>
+
+
+    <section class="history-section">
+
+        <div class="section-heading">
+            <div>
+                <span class="eyebrow">AKTIVITAS</span>
+                <h2>Semua transaksi</h2>
+            </div>
+        </div>
+
+        <div class="transaction-card">
+
+            {% for item in transactions %}
+
+            <div class="transaction-row">
+
+                <div class="transaction-left">
+
+                    <div class="transaction-icon
+                        {{ 'transaction-expense' if item.transfer_type == 'Keluar' else 'transaction-income' }}">
+                        {{ '↗' if item.transfer_type == 'Keluar' else '↙' }}
+                    </div>
+
+                    <div class="transaction-info">
+
+                        {% if item.transfer_type == 'Keluar' %}
+                        <strong>Transfer keluar</strong>
+                        <small>Ke {{ item.receiver_number }}</small>
+                        {% else %}
+                        <strong>Transfer masuk</strong>
+                        <small>Dari {{ item.sender_number }}</small>
+                        {% endif %}
+
+                        {% if item.note %}
+                        <small>{{ item.note }}</small>
+                        {% endif %}
+
+                        <small>{{ item.created_at.strftime("%d %b %Y, %H:%M") if item.created_at else "-" }}</small>
+
+                    </div>
+
+                </div>
+
+                <div class="transaction-amount">
+                    <strong style="color: {{ 'var(--danger)' if item.transfer_type == 'Keluar' else 'var(--success)' }};">
+                        {{ "-" if item.transfer_type == "Keluar" else "+" }}Rp {{ "{:,.0f}".format(item.amount or 0).replace(",", ".") }}
+                    </strong>
+                </div>
+
+            </div>
+
+            {% else %}
+
+            <div class="empty-state">
+                <div class="empty-icon">⇄</div>
+                <strong>Belum ada transaksi</strong>
+                <p>Riwayat transaksi akan muncul di sini.</p>
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+    </section>
+
+</div>
+
+{% endblock %}

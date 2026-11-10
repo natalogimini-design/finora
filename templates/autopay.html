@@ -1,0 +1,299 @@
+{% extends "base.html" %}
+
+{% block title %}
+AutoPay — FINORA
+{% endblock %}
+
+
+{% block content %}
+
+<div class="page-container">
+
+
+    <div class="page-header">
+
+        <span class="eyebrow">
+            FINORA AUTOPAY
+        </span>
+
+        <h1>
+            AutoPay
+        </h1>
+
+        <p>
+            Atur pembayaran rutin agar lebih mudah
+            dipantau.
+        </p>
+
+    </div>
+
+
+
+    <!-- SUMMARY -->
+
+    <div class="autopay-summary">
+
+        <div>
+
+            <span>
+                Pembayaran aktif
+            </span>
+
+            <strong>
+                2
+            </strong>
+
+        </div>
+
+
+        <div>
+
+            <span>
+                Estimasi per bulan
+            </span>
+
+            <strong>
+                Rp 500.000
+            </strong>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- AUTOPAY ITEM -->
+
+    <div class="autopay-card">
+
+        <div class="autopay-icon">
+            ◈
+        </div>
+
+
+        <div class="autopay-content">
+
+            <div class="autopay-title">
+
+                <strong>
+                    Internet
+                </strong>
+
+                <span class="autopay-active">
+                    Aktif
+                </span>
+
+            </div>
+
+
+            <p>
+                Pembayaran internet bulanan
+            </p>
+
+
+            <div class="autopay-meta">
+
+                <span>
+                    Rp 350.000
+                </span>
+
+                <span>
+                    Setiap tanggal 10
+                </span>
+
+                <span>
+                    Bulanan
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <button
+            type="button"
+            class="autopay-switch active"
+        >
+            ON
+        </button>
+
+    </div>
+
+
+
+    <!-- ITEM 2 -->
+
+    <div class="autopay-card">
+
+        <div class="autopay-icon">
+            ◇
+        </div>
+
+
+        <div class="autopay-content">
+
+            <div class="autopay-title">
+
+                <strong>
+                    Streaming
+                </strong>
+
+                <span class="autopay-active">
+                    Aktif
+                </span>
+
+            </div>
+
+
+            <p>
+                Langganan streaming bulanan
+            </p>
+
+
+            <div class="autopay-meta">
+
+                <span>
+                    Rp 150.000
+                </span>
+
+                <span>
+                    Setiap tanggal 15
+                </span>
+
+                <span>
+                    Bulanan
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <button
+            type="button"
+            class="autopay-switch active"
+        >
+            ON
+        </button>
+
+    </div>
+
+
+
+    <!-- ADD -->
+
+    <div class="form-card">
+
+        <div class="form-card-title">
+
+            <div>
+
+                <h2>
+                    Tambah AutoPay
+                </h2>
+
+                <p>
+                    Buat jadwal pembayaran baru.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <form>
+
+
+            <div class="form-group">
+
+                <label>
+                    Nama pembayaran
+                </label>
+
+                <input
+                    type="text"
+                    placeholder="Contoh: Internet"
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Nominal
+                </label>
+
+                <div class="money-input">
+
+                    <span>
+                        Rp
+                    </span>
+
+                    <input
+                        type="number"
+                        placeholder="350000"
+                    >
+
+                </div>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Tanggal pembayaran
+                </label>
+
+                <input
+                    type="number"
+                    min="1"
+                    max="31"
+                    placeholder="10"
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Frekuensi
+                </label>
+
+                <select class="finora-select">
+
+                    <option>
+                        Bulanan
+                    </option>
+
+                    <option>
+                        Mingguan
+                    </option>
+
+                    <option>
+                        Tahunan
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <button
+                type="button"
+                class="primary-button"
+            >
+                Simpan AutoPay
+            </button>
+
+
+        </form>
+
+    </div>
+
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+
+{% block title %}
+FINORA — Target Tabungan
+{% endblock %}
+
+
+{% block content %}
+
+<div class="dashboard">
+
+    <section class="dashboard-heading">
+
+        <span class="eyebrow">
+            FINORA FINANCIAL GOALS
+        </span>
+
+        <h1>
+            Target Tabungan
+        </h1>
+
+        <p>
+            Wujudkan target finansialmu sedikit demi sedikit.
+        </p>
+
+    </section>
+
+
+    <!-- BUAT TARGET -->
+
+    <section class="dashboard-section">
+
+        <div class="section-heading">
+
+            <div>
+
+                <span class="eyebrow">
+                    TARGET BARU
+                </span>
+
+                <h2>
+                    Buat target tabungan
+                </h2>
+
+            </div>
+
+        </div>
+
+
+        <form
+            method="POST"
+            class="form-card"
+        >
+
+            <div class="form-group">
+
+                <label>
+                    Nama target
+                </label>
+
+                <input
+                    type="text"
+                    name="name"
+                    placeholder="Contoh: Laptop baru"
+                    required
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Target dana
+                </label>
+
+                <input
+                    type="number"
+                    name="target_amount"
+                    min="1"
+                    placeholder="8000000"
+                    required
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Deadline
+                </label>
+
+                <input
+                    type="date"
+                    name="deadline"
+                >
+
+            </div>
+
+
+            <button
+                type="submit"
+                class="btn-primary"
+            >
+                + Buat Target
+            </button>
+
+        </form>
+
+    </section>
+
+
+    <!-- TARGET -->
+
+    <section class="dashboard-section">
+
+        <div class="section-heading">
+
+            <div>
+
+                <span class="eyebrow">
+                    TARGET SAYA
+                </span>
+
+                <h2>
+                    Daftar target
+                </h2>
+
+            </div>
+
+        </div>
+
+
+        <div class="quick-menu">
+
+            {% for goal in goals %}
+
+            <div class="quick-item">
+
+                <strong>
+                    {{ goal.name }}
+                </strong>
+
+                <small>
+                    Rp {{ "{:,.0f}".format(goal.saved_amount or 0) }}
+                    /
+                    Rp {{ "{:,.0f}".format(goal.target_amount or 0) }}
+                </small>
+
+
+                <div
+                    style="
+                        width:100%;
+                        height:8px;
+                        border-radius:20px;
+                        background:#202331;
+                        overflow:hidden;
+                        margin:15px 0;
+                    "
+                >
+
+                    <div
+                        style="
+                            width:{{ goal.progress }}%;
+                            height:100%;
+                            background:currentColor;
+                        "
+                    ></div>
+
+                </div>
+
+
+                <small>
+                    {{ goal.progress }}% tercapai
+                </small>
+
+                <small>
+                    Sisa:
+                    Rp {{ "{:,.0f}".format(goal.remaining) }}
+                </small>
+
+
+                {% if goal.deadline %}
+
+                <small>
+                    Deadline: {{ goal.deadline }}
+                </small>
+
+                {% endif %}
+
+
+                <form
+                    method="POST"
+                    action="{{ url_for('savings.add_savings', goal_id=goal.id) }}"
+                    style="margin-top:15px;"
+                >
+
+                    <input
+                        type="number"
+                        name="amount"
+                        min="1"
+                        placeholder="Tambah dana"
+                        required
+                    >
+
+                    <button
+                        type="submit"
+                        class="btn-primary"
+                    >
+                        + Tambah Dana
+                    </button>
+
+                </form>
+
+
+                <form
+                    method="POST"
+                    action="{{ url_for('savings.delete_goal', goal_id=goal.id) }}"
+                    style="margin-top:8px;"
+                >
+
+                    <button
+                        type="submit"
+                        class="btn-secondary"
+                    >
+                        Hapus Target
+                    </button>
+
+                </form>
+
+            </div>
+
+            {% else %}
+
+            <div class="empty-state">
+
+                <strong>
+                    Belum ada target tabungan
+                </strong>
+
+                <p>
+                    Buat target pertama kamu di atas.
+                </p>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+    </section>
+
+</div>
+
+{% endblock %}

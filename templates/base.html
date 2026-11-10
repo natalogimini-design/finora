@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0b1020">
+
+    <title>
+        {% block title %}FINORA{% endblock %}
+    </title>
+
+
+    <!-- GOOGLE FONT -->
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Poppins:wght@400;500;600;700&display=swap"
+          rel="stylesheet">
+
+
+    <!-- BOOTSTRAP ICONS -->
+
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+
+    <!-- FINORA MAIN CSS -->
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+
+    {% block extra_css %}{% endblock %}
+
+</head>
+
+
+<body>
+
+
+    <!-- =====================================================
+         BATIK TOP ACCENT
+    ====================================================== -->
+
+    <div class="batik-top-accent" aria-hidden="true">
+        <div class="batik-pattern"></div>
+    </div>
+
+
+    <!-- =====================================================
+         TOPBAR
+    ====================================================== -->
+
+    <header class="topbar">
+
+        <div class="topbar-inner">
+
+
+            <!-- BRAND (selalu tampil) -->
+
+            <a href="{{ url_for('dashboard.home') }}" class="brand">
+
+                <span class="brand-mark">
+                    <i class="bi bi-wallet2"></i>
+                </span>
+
+                <span class="brand-text">
+                    <strong>FINORA</strong>
+                    <small>Digital Finance</small>
+                </span>
+
+            </a>
+
+
+            {% if session.get("user_id") %}
+
+            <!-- DESKTOP NAVIGATION (hanya setelah login) -->
+
+            <nav class="main-nav">
+
+                <a href="{{ url_for('dashboard.home') }}" class="nav-link">
+                    <i class="bi bi-grid-1x2-fill"></i>
+                    <span>Beranda</span>
+                </a>
+
+                <a href="{{ url_for('transactions.history') }}" class="nav-link">
+                    <i class="bi bi-clock-history"></i>
+                    <span>Transaksi</span>
+                </a>
+
+                <a href="{{ url_for('transfer.transfer_page') }}" class="nav-link">
+                    <i class="bi bi-send"></i>
+                    <span>Transfer</span>
+                </a>
+
+                <a href="{{ url_for('payments.payment') }}" class="nav-link">
+                    <i class="bi bi-receipt"></i>
+                    <span>Pembayaran</span>
+                </a>
+
+                <a href="{{ url_for('autopay.index') }}" class="nav-link">
+                    <i class="bi bi-arrow-repeat"></i>
+                    <span>AutoPay</span>
+                </a>
+
+                <a href="{{ url_for('savings.index') }}" class="nav-link">
+                    <i class="bi bi-piggy-bank"></i>
+                    <span>Tabungan</span>
+                </a>
+
+                <a href="{{ url_for('investments.index') }}" class="nav-link">
+                    <i class="bi bi-graph-up-arrow"></i>
+                    <span>Investasi</span>
+                </a>
+
+            </nav>
+
+
+            <!-- USER -->
+
+            <div class="topbar-user">
+
+                <div class="user-avatar">
+                    <i class="bi bi-person-fill"></i>
+                </div>
+
+                <div class="user-info">
+                    <span>{{ session.get("user_name", "Pengguna") }}</span>
+                    <small>Pengguna FINORA</small>
+                </div>
+
+                <a href="{{ url_for('auth.logout') }}"
+                   class="logout-button"
+                   title="Keluar">
+                    <i class="bi bi-box-arrow-right"></i>
+                </a>
+
+            </div>
+
+            {% endif %}
+
+
+        </div>
+
+    </header>
+
+
+
+    <!-- =====================================================
+         BATIK DECORATION
+    ====================================================== -->
+
+    <div class="batik-divider" aria-hidden="true">
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+
+
+
+    <!-- =====================================================
+         MAIN CONTENT
+    ====================================================== -->
+
+    <main class="main-content">
+
+
+        <!-- FLASH MESSAGE -->
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+
+            {% if messages %}
+
+                <div class="flash-container">
+
+                    {% for category, message in messages %}
+
+                        <div class="flash-message flash-{{ category }}">
+
+                            {% if category == "success" %}
+                                <i class="bi bi-check-circle-fill"></i>
+                            {% elif category == "danger" %}
+                                <i class="bi bi-x-circle-fill"></i>
+                            {% elif category == "warning" %}
+                                <i class="bi bi-exclamation-triangle-fill"></i>
+                            {% else %}
+                                <i class="bi bi-info-circle-fill"></i>
+                            {% endif %}
+
+                            <span>{{ message }}</span>
+
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+            {% endif %}
+
+        {% endwith %}
+
+
+        <!-- PAGE CONTENT -->
+
+        {% block content %}
+        {% endblock %}
+
+
+    </main>
+
+
+
+    <!-- =====================================================
+         FOOTER
+    ====================================================== -->
+
+    <footer class="site-footer">
+
+        <div class="footer-batik" aria-hidden="true">
+            <div class="batik-mini-pattern"></div>
+        </div>
+
+        <div class="footer-content">
+
+            <div class="footer-brand">
+
+                <div class="footer-logo">
+
+                    <span class="brand-mark">
+                        <i class="bi bi-wallet2"></i>
+                    </span>
+
+                    <div>
+                        <strong>FINORA</strong>
+                        <small>Digital Finance</small>
+                    </div>
+
+                </div>
+
+                <p>
+                    Kelola keuangan dengan lebih tenang,
+                    terarah, dan cerdas.
+                </p>
+
+            </div>
+
+            <div class="footer-right">
+                <span>© {{ current_year if current_year else 2026 }} FINORA</span>
+                <span class="footer-dot">•</span>
+                <span>A Place to Manage Your Future</span>
+            </div>
+
+        </div>
+
+    </footer>
+
+
+
+    <!-- =====================================================
+         BOTTOM NAVIGATION — MOBILE (hanya setelah login)
+    ====================================================== -->
+
+    {% if session.get("user_id") %}
+
+    <nav class="mobile-bottom-nav">
+
+        <a href="{{ url_for('dashboard.home') }}" class="mobile-nav-item">
+            <i class="bi bi-grid-1x2-fill"></i>
+            <span>Home</span>
+        </a>
+
+        <a href="{{ url_for('transactions.history') }}" class="mobile-nav-item">
+            <i class="bi bi-clock-history"></i>
+            <span>Riwayat</span>
+        </a>
+
+        <a href="{{ url_for('transfer.transfer_page') }}" class="mobile-nav-center">
+            <span>
+                <i class="bi bi-send-fill"></i>
+            </span>
+        </a>
+
+        <a href="{{ url_for('savings.index') }}" class="mobile-nav-item">
+            <i class="bi bi-piggy-bank"></i>
+            <span>Tabungan</span>
+        </a>
+
+        <a href="{{ url_for('investments.index') }}" class="mobile-nav-item">
+            <i class="bi bi-graph-up-arrow"></i>
+            <span>Investasi</span>
+        </a>
+
+    </nav>
+
+    {% endif %}
+
+
+
+    <!-- JAVASCRIPT -->
+
+    {% block scripts %}{% endblock %}
+
+
+</body>
+
+</html>

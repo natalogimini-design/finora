@@ -1,0 +1,239 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+
+<style>
+    .payment-container {
+        max-width: 650px;
+        margin: 20px auto;
+    }
+
+    .page-header {
+        margin-bottom: 25px;
+    }
+
+    .page-header h1 {
+        color: #203B56;
+        font-size: 28px;
+        margin-bottom: 8px;
+    }
+
+    .page-header p {
+        color: #777;
+    }
+
+    .payment-card {
+        background: white;
+        padding: 30px;
+        border-radius: 18px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.06);
+    }
+
+    .payment-card label {
+        display: block;
+        margin-top: 18px;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #34495e;
+    }
+
+    .payment-card input,
+    .payment-card select {
+        width: 100%;
+        padding: 13px;
+        border: 1px solid #dce3eb;
+        border-radius: 10px;
+        outline: none;
+        font-size: 14px;
+        box-sizing: border-box;
+        background: #fff;
+    }
+
+    .payment-card input:focus,
+    .payment-card select:focus {
+        border-color: #6CA6D9;
+    }
+
+    .payment-button {
+        width: 100%;
+        margin-top: 25px;
+        padding: 14px;
+        background: #6CA6D9;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 15px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .payment-button:hover {
+        background: #4C8FC8;
+    }
+
+    .message {
+        padding: 13px;
+        margin-bottom: 15px;
+        border-radius: 9px;
+    }
+
+    .success {
+        background: #e5f8ed;
+        color: #21834d;
+    }
+
+    .error {
+        background: #ffe8e8;
+        color: #c0392b;
+    }
+
+    .payment-result {
+        background: #f0f7ff;
+        padding: 20px;
+        margin-top: 20px;
+        border-radius: 12px;
+    }
+
+    .payment-result h3 {
+        color: #287bba;
+    }
+
+    .payment-result p {
+        margin: 10px 0;
+    }
+
+    .payment-result strong {
+        color: #203B56;
+    }
+</style>
+
+<div class="payment-container">
+
+    <div class="page-header">
+        <h1>Pembayaran</h1>
+        <p>
+            Kelola pembayaran kebutuhanmu
+            dengan mudah melalui FINORA.
+        </p>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+            <div class="message {{ category }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endwith %}
+
+    <div class="payment-card">
+
+        <form method="POST"
+        action="{{ url_for('payments.payment') }}"              
+        onsubmit="return confirmPayment()">
+
+            <label for="category">
+                Kategori Pembayaran
+            </label>
+
+            <select name="category" id="category" required>
+                <option value="">Pilih kategori</option>
+                <option value="UKT">UKT</option>
+                <option value="Listrik">Listrik</option>
+                <option value="Air">Air</option>
+                <option value="Internet">Internet</option>
+                <option value="Pulsa">Pulsa</option>
+            </select>
+
+            <label for="customer_number">
+                Nomor Pelanggan
+            </label>
+
+            <input
+                type="text"
+                id="customer_number"
+                name="customer_number"
+                placeholder="Masukkan nomor pelanggan"
+                inputmode="numeric"
+                pattern="[0-9]+"
+                required
+            >
+
+            <label for="amount">
+                Nominal Pembayaran (Rp)
+            </label>
+
+            <input
+                type="number"
+                id="amount"
+                name="amount"
+                placeholder="Contoh: 100000"
+                min="1000"
+                required
+            >
+
+            <button type="submit" class="payment-button">
+                Bayar Sekarang
+            </button>
+
+        </form>
+
+    </div>
+
+    {% if payment %}
+
+    <div class="payment-result">
+
+        <h3>✓ Pembayaran Berhasil</h3>
+
+        <p>
+            Kategori:
+            <strong>{{ payment.category }}</strong>
+        </p>
+
+        <p>
+            Nomor Pelanggan:
+            <strong>{{ payment.customer_number }}</strong>
+        </p>
+
+        <p>
+            Nominal:
+            <strong>
+                Rp{{ "{:,.0f}".format(payment.amount).replace(",", ".") }}
+            </strong>
+        </p>
+
+        <p>
+            Status:
+            <strong>{{ payment.status }}</strong>
+        </p>
+
+        <small>
+            Ini adalah bukti simulasi pembayaran FINORA.
+        </small>
+
+    </div>
+
+    {% endif %}
+
+</div>
+
+<script>
+function confirmPayment() {
+
+    const category =
+        document.getElementById('category').value;
+
+    const amount =
+        document.getElementById('amount').value;
+
+    return confirm(
+        "Konfirmasi Pembayaran\n\n" +
+        "Kategori: " + category + "\n" +
+        "Nominal: Rp" + amount + "\n\n" +
+        "Lanjutkan simulasi pembayaran?"
+    );
+}
+</script>
+
+{% endblock %}

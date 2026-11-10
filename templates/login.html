@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+
+
+{% block title %}
+Login — FINORA
+{% endblock %}
+
+
+
+{% block content %}
+
+<div class="page-container">
+
+
+    <!-- =========================================
+         LOGIN HEADER
+    ========================================== -->
+
+    <div class="page-header">
+
+        <span class="eyebrow">
+            FINORA DIGITAL FINANCE
+        </span>
+
+        <h1>
+            Welcome to FINORA
+        </h1>
+
+        <p>
+            Manage your money, your way.
+        </p>
+
+    </div>
+
+
+
+    <!-- =========================================
+         LOGIN CARD
+    ========================================== -->
+
+    <div class="form-card">
+
+        <div class="form-card-title">
+
+            <div>
+
+                <h2>
+                    Login
+                </h2>
+
+                <p>
+                    Masuk untuk mengelola keuanganmu.
+                </p>
+
+            </div>
+
+        </div>
+
+
+
+        <form method="POST">
+
+
+            <!-- EMAIL -->
+
+            <div class="form-group">
+
+                <label for="email">
+                    Email
+                </label>
+
+                <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    placeholder="nama@email.com"
+                    autocomplete="email"
+                    required
+                >
+
+            </div>
+
+
+
+            <!-- PASSWORD -->
+
+            <div class="form-group">
+
+                <label for="password">
+                    Password
+                </label>
+
+
+                <div class="password-wrapper">
+
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        placeholder="Password"
+                        autocomplete="current-password"
+                        required
+                    >
+
+
+                    <button
+                        type="button"
+                        class="password-toggle"
+                        id="passwordToggle"
+                        aria-label="Lihat password"
+                    >
+                        👁
+                    </button>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- LOGIN BUTTON -->
+
+            <button
+                type="submit"
+                class="primary-button"
+            >
+                Login
+            </button>
+
+
+        </form>
+
+
+
+        <!-- REGISTER -->
+
+        <p class="login-register">
+
+            Belum punya akun?
+
+            <a href="/register">
+                Daftar
+            </a>
+
+        </p>
+
+
+    </div>
+
+
+</div>
+
+
+
+<!-- =========================================
+     PASSWORD SHOW / HIDE
+========================================== -->
+
+<script>
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+        const passwordInput =
+            document.getElementById("password");
+
+        const passwordToggle =
+            document.getElementById("passwordToggle");
+
+
+        if (!passwordInput || !passwordToggle) {
+            return;
+        }
+
+
+        passwordToggle.addEventListener("click", function () {
+
+            if (passwordInput.type === "password") {
+
+                passwordInput.type = "text";
+
+                passwordToggle.textContent = "🙈";
+
+                passwordToggle.setAttribute(
+                    "aria-label",
+                    "Sembunyikan password"
+                );
+
+            } else {
+
+                passwordInput.type = "password";
+
+                passwordToggle.textContent = "👁";
+
+                passwordToggle.setAttribute(
+                    "aria-label",
+                    "Lihat password"
+                );
+
+            }
+
+        });
+
+    });
+
+</script>
+
+{% endblock %}

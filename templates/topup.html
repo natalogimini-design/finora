@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Top Up - FINORA</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f6f5f2;
+            color: #172033;
+            min-height: 100vh;
+        }
+
+        /* ==================================================
+           HEADER
+        ================================================== */
+
+        .header {
+            height: 86px;
+            background: #0b223f;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            padding: 0 6%;
+            color: white;
+
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.12);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 13px;
+        }
+
+        .brand-logo {
+            width: 42px;
+            height: 42px;
+
+            background: #dcae32;
+            color: #0b223f;
+
+            border-radius: 12px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .brand-text h1 {
+            font-size: 18px;
+            letter-spacing: 0.5px;
+        }
+
+        .brand-text p {
+            font-size: 10px;
+            color: #d9e0ea;
+            margin-top: 2px;
+        }
+
+        .user-box {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-avatar {
+            width: 38px;
+            height: 38px;
+
+            border-radius: 50%;
+
+            background: #dcae32;
+            color: #0b223f;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            font-weight: bold;
+        }
+
+        .user-text {
+            font-size: 11px;
+            line-height: 1.25;
+        }
+
+        .user-text span {
+            color: #dce3ed;
+        }
+
+        /* ==================================================
+           CONTAINER
+        ================================================== */
+
+        .container {
+            width: min(900px, 92%);
+            margin: 45px auto 100px;
+        }
+
+        .back {
+            display: inline-block;
+            text-decoration: none;
+
+            color: #0b223f;
+
+            font-size: 14px;
+            font-weight: 600;
+
+            margin-bottom: 22px;
+        }
+
+        .back:hover {
+            color: #b78c1d;
+        }
+
+        /* ==================================================
+           ALERT
+        ================================================== */
+
+        .alert {
+            padding: 14px 17px;
+            border-radius: 12px;
+
+            margin-bottom: 12px;
+
+            font-size: 14px;
+        }
+
+        .alert.success {
+            background: #e5f5ea;
+            color: #176b35;
+        }
+
+        .alert.error {
+            background: #fde7e7;
+            color: #b42323;
+        }
+
+        /* ==================================================
+           TITLE
+        ================================================== */
+
+        .page-title {
+            margin-bottom: 25px;
+        }
+
+        .page-title h2 {
+            font-size: 28px;
+            color: #0b223f;
+            margin-bottom: 8px;
+        }
+
+        .page-title p {
+            color: #707782;
+            font-size: 14px;
+        }
+
+        /* ==================================================
+           BALANCE CARD
+        ================================================== */
+
+        .balance-card {
+            background: #0b223f;
+            color: white;
+
+            border-radius: 20px;
+
+            padding: 28px;
+
+            margin-bottom: 25px;
+
+            box-shadow: 0 12px 30px rgba(11, 34, 63, 0.18);
+        }
+
+        .balance-label {
+            font-size: 13px;
+            color: #cbd5e1;
+            margin-bottom: 10px;
+        }
+
+        .balance {
+            font-size: 32px;
+            font-weight: 700;
+            color: #e1b43a;
+        }
+
+        .account-number {
+            margin-top: 15px;
+            font-size: 12px;
+            color: #cbd5e1;
+        }
+
+        /* ==================================================
+           FORM CARD
+        ================================================== */
+
+        .card {
+            background: white;
+
+            border-radius: 20px;
+
+            padding: 30px;
+
+            box-shadow: 0 8px 28px rgba(0, 0, 0, 0.06);
+        }
+
+        .card h3 {
+            color: #0b223f;
+            font-size: 20px;
+            margin-bottom: 22px;
+        }
+
+        .form-group {
+            margin-bottom: 22px;
+        }
+
+        .form-group label {
+            display: block;
+
+            font-size: 13px;
+            font-weight: 600;
+
+            margin-bottom: 9px;
+
+            color: #374151;
+        }
+
+        .amount-input {
+            width: 100%;
+
+            border: 1px solid #d8dce2;
+
+            border-radius: 12px;
+
+            padding: 15px;
+
+            font-size: 20px;
+            font-weight: 600;
+
+            outline: none;
+
+            color: #172033;
+
+            transition: 0.2s;
+        }
+
+        .amount-input:focus {
+            border-color: #dcae32;
+
+            box-shadow:
+                0 0 0 3px rgba(220, 174, 50, 0.13);
+        }
+
+        .method-select {
+            width: 100%;
+
+            border: 1px solid #d8dce2;
+
+            border-radius: 12px;
+
+            padding: 14px;
+
+            font-size: 14px;
+
+            background: white;
+
+            outline: none;
+
+            color: #172033;
+        }
+
+        .method-select:focus {
+            border-color: #dcae32;
+        }
+
+        /* ==================================================
+           QUICK AMOUNT
+        ================================================== */
+
+        .quick-title {
+            font-size: 12px;
+            color: #737983;
+            margin-bottom: 10px;
+        }
+
+        .quick-buttons {
+            display: grid;
+
+            grid-template-columns:
+                repeat(4, 1fr);
+
+            gap: 10px;
+
+            margin-bottom: 24px;
+        }
+
+        .quick-button {
+            border: 1px solid #dfe2e7;
+
+            background: #fafafa;
+
+            border-radius: 10px;
+
+            padding: 11px 8px;
+
+            font-size: 12px;
+
+            cursor: pointer;
+
+            color: #263247;
+
+            transition: 0.2s;
+        }
+
+        .quick-button:hover {
+            border-color: #dcae32;
+            background: #fff9e8;
+        }
+
+        /* ==================================================
+           SUBMIT
+        ================================================== */
+
+        .submit-button {
+            width: 100%;
+
+            border: none;
+
+            background: #dcae32;
+            color: #0b223f;
+
+            padding: 15px;
+
+            border-radius: 12px;
+
+            font-size: 15px;
+            font-weight: 700;
+
+            cursor: pointer;
+
+            transition: 0.2s;
+        }
+
+        .submit-button:hover {
+            background: #c99d27;
+
+            transform: translateY(-1px);
+        }
+
+        .info {
+            margin-top: 15px;
+
+            font-size: 12px;
+
+            line-height: 1.6;
+
+            color: #7b818b;
+
+            text-align: center;
+        }
+
+        /* ==================================================
+           MOBILE
+        ================================================== */
+
+        @media (max-width: 650px) {
+
+            .header {
+                height: 75px;
+                padding: 0 5%;
+            }
+
+            .brand-text h1 {
+                font-size: 16px;
+            }
+
+            .user-text {
+                display: none;
+            }
+
+            .container {
+                margin-top: 30px;
+            }
+
+            .page-title h2 {
+                font-size: 24px;
+            }
+
+            .balance {
+                font-size: 27px;
+            }
+
+            .card {
+                padding: 22px;
+            }
+
+            .quick-buttons {
+                grid-template-columns:
+                    repeat(2, 1fr);
+            }
+        }
+
+    </style>
+</head>
+
+<body>
+
+<!-- ======================================================
+     HEADER
+====================================================== -->
+
+<header class="header">
+
+    <div class="brand">
+
+        <div class="brand-logo">
+            F
+        </div>
+
+        <div class="brand-text">
+
+            <h1>FINORA</h1>
+
+            <p>Your Money. Your Future.</p>
+
+        </div>
+
+    </div>
+
+
+    <div class="user-box">
+
+        <div class="user-avatar">
+            {{ (session.get("user_name") or "U")[:1]|upper }}
+        </div>
+
+        <div class="user-text">
+            <span>Selamat datang</span><br>
+            <strong>{{ session.get("user_name", "user") }}</strong>
+        </div>
+
+    </div>
+
+</header>
+
+
+<!-- ======================================================
+     MAIN
+====================================================== -->
+
+<main class="container">
+
+    <a href="{{ url_for('dashboard.home') }}"
+       class="back">
+
+        ← Kembali ke Dashboard
+
+    </a>
+
+
+    <!-- ==================================================
+         FLASH MESSAGE
+    ================================================== -->
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+
+        {% if messages %}
+
+            {% for category, message in messages %}
+
+                <div class="alert {{ category }}">
+
+                    {{ message }}
+
+                </div>
+
+            {% endfor %}
+
+        {% endif %}
+
+    {% endwith %}
+
+
+    <!-- ==================================================
+         TITLE
+    ================================================== -->
+
+    <div class="page-title">
+
+        <h2>Top Up Saldo</h2>
+
+        <p>
+            Tambahkan saldo ke rekening FINORA kamu dengan mudah.
+        </p>
+
+    </div>
+
+
+    <!-- ==================================================
+         BALANCE
+    ================================================== -->
+
+    <div class="balance-card">
+
+        <div class="balance-label">
+            Saldo Saat Ini
+        </div>
+
+        <div class="balance">
+
+            Rp {{ "{:,.0f}".format(account.balance or 0)
+                 .replace(",", ".") }}
+
+        </div>
+
+        <div class="account-number">
+
+            No. Rekening:
+            {{ account.account_number }}
+
+        </div>
+
+    </div>
+
+
+    <!-- ==================================================
+         FORM
+    ================================================== -->
+
+    <div class="card">
+
+        <h3>
+            Isi Saldo
+        </h3>
+
+
+        <form method="POST"
+              action="{{ url_for('topup.topup_page') }}">
+
+
+            <!-- NOMINAL -->
+
+            <div class="form-group">
+
+                <label for="amount">
+                    Nominal Top Up
+                </label>
+
+                <input
+                    type="number"
+                    id="amount"
+                    name="amount"
+                    class="amount-input"
+                    placeholder="Masukkan nominal"
+                    min="1"
+                    max="100000000"
+                    step="1"
+                    required
+                >
+
+            </div>
+
+
+            <!-- NOMINAL CEPAT -->
+
+            <div class="quick-title">
+                Pilih nominal cepat
+            </div>
+
+            <div class="quick-buttons">
+
+                <button
+                    type="button"
+                    class="quick-button"
+                    onclick="setAmount(50000)">
+                    Rp 50.000
+                </button>
+
+                <button
+                    type="button"
+                    class="quick-button"
+                    onclick="setAmount(100000)">
+                    Rp 100.000
+                </button>
+
+                <button
+                    type="button"
+                    class="quick-button"
+                    onclick="setAmount(250000)">
+                    Rp 250.000
+                </button>
+
+                <button
+                    type="button"
+                    class="quick-button"
+                    onclick="setAmount(500000)">
+                    Rp 500.000
+                </button>
+
+                <button
+                    type="button"
+                    class="quick-button"
+                    onclick="setAmount(1000000)">
+                    Rp 1.000.000
+                </button>
+
+                <button
+                    type="button"
+                    class="quick-button"
+                    onclick="setAmount(2000000)">
+                    Rp 2.000.000
+                </button>
+
+                <button
+                    type="button"
+                    class="quick-button"
+                    onclick="setAmount(5000000)">
+                    Rp 5.000.000
+                </button>
+
+                <button
+                    type="button"
+                    class="quick-button"
+                    onclick="setAmount(10000000)">
+                    Rp 10.000.000
+                </button>
+
+            </div>
+
+
+            <!-- METODE -->
+
+            <div class="form-group">
+
+                <label for="method">
+                    Metode Top Up
+                </label>
+
+                <select
+                    id="method"
+                    name="method"
+                    class="method-select">
+
+                    <option value="Simulasi">
+                        Simulasi
+                    </option>
+
+                    <option value="Transfer Bank">
+                        Transfer Bank
+                    </option>
+
+                    <option value="Virtual Account">
+                        Virtual Account
+                    </option>
+
+                    <option value="E-Wallet">
+                        E-Wallet
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <!-- SUBMIT -->
+
+            <button
+                type="submit"
+                class="submit-button">
+
+                + Top Up Sekarang
+
+            </button>
+
+
+            <div class="info">
+
+                Top Up ini merupakan simulasi transaksi
+                untuk aplikasi FINORA.
+
+                <br>
+
+                Maksimal Top Up:
+                <strong>Rp 100.000.000</strong>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</main>
+
+
+<script>
+
+function setAmount(amount) {
+
+    document.getElementById("amount").value = amount;
+
+}
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1292 @@
+{% extends "base.html" %}
+
+{% block title %}
+FINORA — Beranda
+{% endblock %}
+
+
+{% block content %}
+
+{# Cara pakai nilai uang: "{:,.0f}".format(nilai or 0) #}
+
+<div class="dashboard">
+
+
+    {% if dashboard_error %}
+
+    <div class="flash-message flash-warning dashboard-notice">
+        {{ dashboard_error }}
+    </div>
+
+    {% endif %}
+
+
+    <!-- =====================================================
+         GREETING
+    ====================================================== -->
+
+    <section class="dashboard-heading">
+
+        <span class="eyebrow">
+            FINORA DIGITAL FINANCE
+        </span>
+
+        <h1>
+            Halo, {{ session.get("user_name", "Pengguna") }} 👋
+        </h1>
+
+        <p>
+            Kelola keuanganmu dengan lebih teratur.
+        </p>
+
+    </section>
+
+
+    <!-- =====================================================
+         BALANCE CARD
+    ====================================================== -->
+
+    <section class="balance-card">
+
+        <div class="balance-top">
+
+            <span>
+                Total saldo
+            </span>
+
+            <span class="balance-status">
+                Aktif
+            </span>
+
+        </div>
+
+
+        <div class="balance-value">
+
+            <span>
+                Rp
+            </span>
+
+            <strong>
+                {{ "{:,.0f}".format(account.balance or 0) }}
+            </strong>
+
+        </div>
+
+
+        <div class="balance-bottom">
+
+            <div>
+
+                <span>
+                    Nomor rekening
+                </span>
+
+                <strong>
+                    {{ account.account_number or "-" }}
+                </strong>
+
+            </div>
+
+
+            <a
+                href="{{ url_for('topup.topup_page') }}"
+                class="balance-topup"
+            >
+                + Top Up
+            </a>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         ACCOUNT + SPENDING LIMIT
+    ====================================================== -->
+
+    <section class="dashboard-grid">
+
+
+        <!-- =================================================
+             ACCOUNT CARD
+        ================================================== -->
+
+        <div class="dashboard-card account-card">
+
+            <div class="card-header">
+
+                <div>
+
+                    <span class="eyebrow">
+                        REKENING
+                    </span>
+
+                    <h3>
+                        Rekening utama
+                    </h3>
+
+                </div>
+
+                <div class="card-icon">
+                    💳
+                </div>
+
+            </div>
+
+
+            <div class="account-bank">
+
+                <span>
+                    {{ account.bank_name or "Rekening Utama" }}
+                </span>
+
+            </div>
+
+
+            <div class="account-number">
+
+                <span>
+                    Nomor rekening
+                </span>
+
+                <strong
+                    id="accountNumber"
+                    data-raw="{{ account.account_number_raw }}"
+                >
+                    {{ account.account_number or "-" }}
+                </strong>
+
+            </div>
+
+
+            <div class="account-owner">
+
+                <span>
+                    Nama pemilik
+                </span>
+
+                <strong>
+                    {{ account.account_name or session.get("user_name", "Pengguna") }}
+                </strong>
+
+            </div>
+
+
+            <button
+                type="button"
+                class="copy-account-btn"
+                id="copyAccountBtn"
+                onclick="copyAccountNumber()"
+            >
+                Salin nomor rekening
+            </button>
+
+        </div>
+
+
+        <!-- =================================================
+             SPENDING LIMIT CARD
+        ================================================== -->
+
+        {% set progress_class = {
+            'danger': 'progress-danger',
+            'warning': 'progress-warning',
+            'notice': 'progress-notice'
+        }.get(warning_level, '') %}
+
+        <div class="dashboard-card spending-card">
+
+            <div class="card-header">
+
+                <div>
+
+                    <span class="eyebrow">
+                        BATAS PENGELUARAN
+                    </span>
+
+                    <h3>
+                        Pengeluaran bulan ini
+                    </h3>
+
+                </div>
+
+                <div class="card-icon">
+                    🎯
+                </div>
+
+            </div>
+
+
+            <div class="spending-amount">
+
+                <strong>
+                    Rp {{ "{:,.0f}".format(current_month_expense or 0) }}
+                </strong>
+
+                <span>
+                    dari Rp {{ "{:,.0f}".format(spending_limit or 0) }}
+                </span>
+
+            </div>
+
+
+            <!-- PROGRESS -->
+
+            <div
+                class="spending-progress"
+                role="progressbar"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                aria-valuenow="{{ [spending_percentage or 0, 100]|min }}"
+            >
+
+                <div
+                    class="spending-progress-bar {{ progress_class }}"
+                    style="width: {{ [spending_percentage or 0, 100]|min }}%;"
+                ></div>
+
+            </div>
+
+
+            <div class="spending-meta">
+
+                <span>
+                    {{ spending_percentage or 0 }}% digunakan
+                </span>
+
+                {% if (remaining_limit or 0) >= 0 %}
+
+                    <strong>
+                        Sisa Rp {{ "{:,.0f}".format(remaining_limit or 0) }}
+                    </strong>
+
+                {% else %}
+
+                    <strong class="text-danger">
+                        Melebihi Rp {{ "{:,.0f}".format((remaining_limit or 0)|abs) }}
+                    </strong>
+
+                {% endif %}
+
+            </div>
+
+
+            {% if (remaining_limit or 0) > 0 %}
+
+            <p class="spending-hint">
+                Batas aman per hari
+                <strong>Rp {{ "{:,.0f}".format(safe_daily_limit or 0) }}</strong>
+                · sisa {{ stats.days_left }} hari bulan ini
+            </p>
+
+            {% endif %}
+
+
+            <!-- UPDATE LIMIT -->
+
+            <form
+                method="POST"
+                action="{{ url_for('dashboard.home') }}"
+                class="limit-form"
+            >
+
+                <input
+                    type="hidden"
+                    name="action"
+                    value="update_limit"
+                >
+
+                <label for="spending_limit">
+                    Ubah batas bulanan
+                </label>
+
+
+                <div class="limit-input">
+
+                    <span>
+                        Rp
+                    </span>
+
+                    <input
+                        type="number"
+                        id="spending_limit"
+                        name="spending_limit"
+                        min="0"
+                        step="1000"
+                        inputmode="numeric"
+                        value="{{ (spending_limit or 2000000)|round|int }}"
+                        required
+                    >
+
+                    <button type="submit">
+                        Simpan
+                    </button>
+
+                </div>
+
+                <small class="limit-note">
+                    Isi dengan kelipatan Rp1.000.
+                </small>
+
+            </form>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         WARNING
+    ====================================================== -->
+
+    <section class="dashboard-warning warning-{{ warning_level }}">
+
+        <div class="warning-icon">
+            {{ '✓' if warning_level == 'safe' else '!' }}
+        </div>
+
+
+        <div class="warning-content">
+
+            <strong>
+
+                {% if warning_level == "danger" %}
+
+                    Batas pengeluaran terlampaui
+
+                {% elif warning_level == "warning" %}
+
+                    Pengeluaran mendekati batas
+
+                {% elif warning_level == "notice" %}
+
+                    Perhatikan pengeluaranmu
+
+                {% else %}
+
+                    Pengeluaran masih aman
+
+                {% endif %}
+
+            </strong>
+
+
+            <p>
+                {{ warning_message }}
+            </p>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         STATISTICS — RINGKASAN BULAN INI
+    ====================================================== -->
+
+    <section class="dashboard-section">
+
+        <div class="section-heading">
+
+            <div>
+
+                <span class="eyebrow">
+                    STATISTIK
+                </span>
+
+                <h2>
+                    Ringkasan keuangan
+                </h2>
+
+            </div>
+
+            <p>
+                Bulan berjalan
+            </p>
+
+        </div>
+
+
+        <div class="statistics-grid">
+
+            <div class="stat-card">
+
+                <div class="stat-icon income">↑</div>
+
+                <div>
+
+                    <span>Pemasukan</span>
+
+                    <strong>
+                        Rp {{ "{:,.0f}".format(current_month_income or 0) }}
+                    </strong>
+
+                    <small>
+                        {{ income_transaction_count or 0 }} transaksi masuk
+                    </small>
+
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-icon expense">↓</div>
+
+                <div>
+
+                    <span>Pengeluaran</span>
+
+                    <strong>
+                        Rp {{ "{:,.0f}".format(current_month_expense or 0) }}
+                    </strong>
+
+                    <small>
+                        {{ expense_transaction_count or 0 }} transaksi keluar
+                    </small>
+
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-icon balance">Rp</div>
+
+                <div>
+
+                    <span>Saldo</span>
+
+                    <strong>
+                        Rp {{ "{:,.0f}".format(account.balance or 0) }}
+                    </strong>
+
+                    <small>
+                        Saldo saat ini
+                    </small>
+
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-icon transaction">#</div>
+
+                <div>
+
+                    <span>Total transaksi</span>
+
+                    <strong>
+                        {{ transaction_count or 0 }}
+                    </strong>
+
+                    <small>
+                        Seluruh riwayat
+                    </small>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         STATISTICS — TREN & WAWASAN
+    ====================================================== -->
+
+    <section class="dashboard-section">
+
+        <div class="section-heading">
+
+            <div>
+
+                <span class="eyebrow">
+                    TREN
+                </span>
+
+                <h2>
+                    Statistik pemasukan &amp; pengeluaran
+                </h2>
+
+            </div>
+
+        </div>
+
+
+        <div class="chart-row">
+
+
+            <!-- 6 BULAN TERAKHIR -->
+
+            <div class="chart-card">
+
+                <div class="chart-head">
+
+                    <div>
+
+                        <strong>6 bulan terakhir</strong>
+
+                        <p>Perbandingan pemasukan dan pengeluaran</p>
+
+                    </div>
+
+                    <div class="chart-legend">
+
+                        <span><i class="legend-dot dot-income"></i>Masuk</span>
+
+                        <span><i class="legend-dot dot-expense"></i>Keluar</span>
+
+                    </div>
+
+                </div>
+
+
+                {% if stats.trend_has_data %}
+
+                <div class="trend-chart">
+
+                    {% for m in stats.trend %}
+
+                    <div class="trend-group {{ 'is-current' if m.is_current else '' }}">
+
+                        <div class="trend-bars">
+
+                            <div
+                                class="trend-bar bar-income"
+                                style="height: {{ m.income_pct }}%;"
+                                title="Pemasukan {{ m.label }}: Rp {{ '{:,.0f}'.format(m.income) }}"
+                            ></div>
+
+                            <div
+                                class="trend-bar bar-expense"
+                                style="height: {{ m.expense_pct }}%;"
+                                title="Pengeluaran {{ m.label }}: Rp {{ '{:,.0f}'.format(m.expense) }}"
+                            ></div>
+
+                        </div>
+
+                        <span class="trend-label">{{ m.label }}</span>
+
+                    </div>
+
+                    {% endfor %}
+
+                </div>
+
+                {% else %}
+
+                <div class="empty-state">
+
+                    <div class="empty-icon">◌</div>
+
+                    <strong>Belum ada data tren</strong>
+
+                    <p>
+                        Grafik akan muncul setelah ada transaksi
+                        pemasukan atau pengeluaran.
+                    </p>
+
+                </div>
+
+                {% endif %}
+
+            </div>
+
+
+            <!-- 7 HARI TERAKHIR -->
+
+            <div class="chart-card">
+
+                <div class="chart-head">
+
+                    <div>
+
+                        <strong>7 hari terakhir</strong>
+
+                        <p>Pengeluaran harian</p>
+
+                    </div>
+
+                    <div class="chart-total">
+                        Rp {{ "{:,.0f}".format(stats.week_total or 0) }}
+                    </div>
+
+                </div>
+
+
+                {% if stats.week_has_data %}
+
+                <div class="week-chart">
+
+                    {% for d in stats.week %}
+
+                    <div class="week-day {{ 'is-today' if d.is_today else '' }}">
+
+                        <div class="week-bar-wrap">
+
+                            <div
+                                class="week-bar"
+                                style="height: {{ d.pct }}%;"
+                                title="{{ d.label }}: Rp {{ '{:,.0f}'.format(d.amount) }}"
+                            ></div>
+
+                        </div>
+
+                        <span class="week-label">{{ d.label }}</span>
+
+                    </div>
+
+                    {% endfor %}
+
+                </div>
+
+                {% else %}
+
+                <div class="empty-state">
+
+                    <div class="empty-icon">◌</div>
+
+                    <strong>Belum ada pengeluaran</strong>
+
+                    <p>
+                        Tidak ada pengeluaran dalam 7 hari terakhir.
+                    </p>
+
+                </div>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+
+        <!-- WAWASAN -->
+
+        <div class="insight-grid">
+
+
+            <div class="insight-card {{ 'is-negative' if stats.net_cashflow < 0 else 'is-positive' }}">
+
+                <span>Arus kas bersih</span>
+
+                <strong>
+                    {% if stats.net_cashflow < 0 %}- {% endif %}Rp {{ "{:,.0f}".format(stats.net_cashflow|abs) }}
+                </strong>
+
+                <small>Pemasukan dikurangi pengeluaran bulan ini</small>
+
+            </div>
+
+
+            <div class="insight-card">
+
+                <span>Rasio tabungan</span>
+
+                <strong>
+                    {% if stats.savings_rate is not none %}
+                        {{ stats.savings_rate }}%
+                    {% else %}
+                        -
+                    {% endif %}
+                </strong>
+
+                <small>
+                    {% if stats.savings_rate is not none %}
+                        Bagian pemasukan yang tidak terpakai
+                    {% else %}
+                        Belum ada pemasukan bulan ini
+                    {% endif %}
+                </small>
+
+            </div>
+
+
+            <div class="insight-card">
+
+                <span>Rata-rata per hari</span>
+
+                <strong>
+                    Rp {{ "{:,.0f}".format(stats.avg_daily_expense or 0) }}
+                </strong>
+
+                <small>Pengeluaran rata-rata sejak awal bulan</small>
+
+            </div>
+
+
+            <div class="insight-card {{ 'is-warning' if stats.projected_over else '' }}">
+
+                <span>Proyeksi akhir bulan</span>
+
+                <strong>
+                    Rp {{ "{:,.0f}".format(stats.projected_expense or 0) }}
+                </strong>
+
+                <small>
+                    {% if stats.projected_over %}
+                        Diperkirakan melewati batas bulanan
+                    {% else %}
+                        Masih di bawah batas bulanan
+                    {% endif %}
+                </small>
+
+            </div>
+
+
+            <div class="insight-card {{ 'is-negative' if (stats.mom_change is not none and stats.mom_change > 0) else '' }}">
+
+                <span>Dibanding bulan lalu</span>
+
+                <strong>
+                    {% if stats.mom_change is not none %}
+                        {{ '%+.1f'|format(stats.mom_change) }}%
+                    {% else %}
+                        -
+                    {% endif %}
+                </strong>
+
+                <small>
+                    {% if stats.mom_change is not none %}
+                        Bulan lalu Rp {{ "{:,.0f}".format(stats.previous_month_expense or 0) }}
+                    {% else %}
+                        Belum ada data bulan lalu
+                    {% endif %}
+                </small>
+
+            </div>
+
+
+            <div class="insight-card">
+
+                <span>Pengeluaran terbesar</span>
+
+                {% if stats.largest_expense %}
+
+                    <strong>
+                        Rp {{ "{:,.0f}".format(stats.largest_expense.amount) }}
+                    </strong>
+
+                    <small>{{ stats.largest_expense.description }}</small>
+
+                {% else %}
+
+                    <strong>-</strong>
+
+                    <small>Belum ada pengeluaran bulan ini</small>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         INCOME VS EXPENSE
+    ====================================================== -->
+
+    <section class="dashboard-section">
+
+        <div class="section-heading">
+
+            <div>
+
+                <span class="eyebrow">
+                    ANALISIS
+                </span>
+
+                <h2>
+                    Pemasukan vs pengeluaran
+                </h2>
+
+            </div>
+
+        </div>
+
+
+        {% if (current_month_income or 0) > 0 %}
+            {% set expense_ratio = (current_month_expense / current_month_income * 100) %}
+        {% else %}
+            {% set expense_ratio = 0 %}
+        {% endif %}
+
+
+        <div class="financial-analysis">
+
+
+            <div class="analysis-item">
+
+                <div class="analysis-top">
+
+                    <span>
+                        Pemasukan bulan ini
+                    </span>
+
+                    <strong>
+                        Rp {{ "{:,.0f}".format(current_month_income or 0) }}
+                    </strong>
+
+                </div>
+
+
+                <div class="analysis-bar">
+
+                    <div
+                        class="analysis-fill income-fill"
+                        style="width: {{ 100 if (current_month_income or 0) > 0 else 0 }}%;"
+                    ></div>
+
+                </div>
+
+            </div>
+
+
+            <div class="analysis-item">
+
+                <div class="analysis-top">
+
+                    <span>
+                        Pengeluaran bulan ini
+                    </span>
+
+                    <strong>
+                        Rp {{ "{:,.0f}".format(current_month_expense or 0) }}
+                    </strong>
+
+                </div>
+
+
+                <div class="analysis-bar">
+
+                    <div
+                        class="analysis-fill expense-fill"
+                        style="width: {{ [expense_ratio, 100]|min }}%;"
+                    ></div>
+
+                </div>
+
+
+                <small>
+
+                    {% if (current_month_income or 0) > 0 %}
+
+                        {{ "{:.1f}".format(expense_ratio) }}%
+                        dari pemasukan bulan ini
+
+                    {% else %}
+
+                        Belum ada data pemasukan.
+
+                    {% endif %}
+
+                </small>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         EXPENSE CATEGORY
+    ====================================================== -->
+
+    <section class="dashboard-section">
+
+        <div class="section-heading">
+
+            <div>
+
+                <span class="eyebrow">
+                    KATEGORI
+                </span>
+
+                <h2>
+                    Pengeluaran berdasarkan kategori
+                </h2>
+
+            </div>
+
+            {% if stats.top_category %}
+
+            <p>
+                Terbesar: {{ stats.top_category.category }}
+            </p>
+
+            {% endif %}
+
+        </div>
+
+
+        <div class="category-card">
+
+
+            {% for item in expense_by_category or [] %}
+
+            <div class="category-row">
+
+
+                <div class="category-info">
+
+                    <strong>
+                        {{ item.category }}
+                    </strong>
+
+                    <span>
+                        {{ item.percentage }}%
+                    </span>
+
+                </div>
+
+
+                <div class="category-bar">
+
+                    <div
+                        class="category-fill"
+                        style="width: {{ item.percentage }}%;"
+                    ></div>
+
+                </div>
+
+
+                <div class="category-amount">
+
+                    Rp {{ "{:,.0f}".format(item.amount or 0) }}
+
+                </div>
+
+            </div>
+
+
+            {% else %}
+
+            <div class="empty-state">
+
+                <div class="empty-icon">
+                    ◌
+                </div>
+
+                <strong>
+                    Belum ada data kategori
+                </strong>
+
+                <p>
+                    Data kategori pengeluaran akan muncul
+                    setelah kamu melakukan transaksi.
+                </p>
+
+            </div>
+
+            {% endfor %}
+
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         QUICK MENU
+    ====================================================== -->
+
+    <section class="dashboard-section">
+
+        <div class="section-heading">
+
+            <div>
+
+                <span class="eyebrow">
+                    MENU
+                </span>
+
+                <h2>
+                    Akses cepat
+                </h2>
+
+            </div>
+
+        </div>
+
+
+        <div class="quick-menu">
+
+            <a href="{{ url_for('transfer.transfer_page') }}" class="quick-item">
+                <span class="quick-icon">↗</span>
+                <strong>Transfer</strong>
+                <small>Kirim saldo</small>
+            </a>
+
+            <a href="{{ url_for('topup.topup_page') }}" class="quick-item quick-topup">
+                <span class="quick-icon">+</span>
+                <strong>Top Up</strong>
+                <small>Tambah saldo</small>
+            </a>
+
+            <a href="{{ url_for('payments.payment') }}" class="quick-item">
+                <span class="quick-icon">◈</span>
+                <strong>Bayar</strong>
+                <small>Pembayaran</small>
+            </a>
+
+            <a href="{{ url_for('savings.index') }}" class="quick-item">
+                <span class="quick-icon">◎</span>
+                <strong>Target Tabungan</strong>
+                <small>Wujudkan target dana</small>
+            </a>
+
+            <a href="{{ url_for('investments.index') }}" class="quick-item">
+                <span class="quick-icon">◇</span>
+                <strong>Investasi</strong>
+                <small>Simulasi investasi</small>
+            </a>
+
+            <a href="{{ url_for('autopay.index') }}" class="quick-item">
+                <span class="quick-icon">⟳</span>
+                <strong>AutoPay</strong>
+                <small>Pembayaran otomatis</small>
+            </a>
+
+            <a href="{{ url_for('transactions.history') }}" class="quick-item">
+                <span class="quick-icon">◷</span>
+                <strong>Riwayat</strong>
+                <small>Lihat transaksi</small>
+            </a>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         TRANSACTIONS
+    ====================================================== -->
+
+    <section class="dashboard-section">
+
+        <div class="section-heading">
+
+            <div>
+
+                <span class="eyebrow">
+                    AKTIVITAS
+                </span>
+
+                <h2>
+                    Transaksi terbaru
+                </h2>
+
+            </div>
+
+
+            <a
+                href="{{ url_for('transactions.history') }}"
+                class="see-all"
+            >
+                Lihat semua
+            </a>
+
+        </div>
+
+
+        <div class="transaction-card">
+
+
+            {% for tx in transactions or [] %}
+
+            <div class="transaction-row">
+
+                <div class="transaction-left">
+
+                    <div class="transaction-icon {{ 'transaction-income' if tx.is_income else 'transaction-expense' }}">
+                        {{ '↑' if tx.is_income else '↓' }}
+                    </div>
+
+                    <div class="transaction-info">
+
+                        <strong>
+                            {{ tx.description }}
+                        </strong>
+
+                        <small>
+                            {{ tx.date_text }}
+                        </small>
+
+                    </div>
+
+                </div>
+
+
+                <div class="transaction-amount {{ 'amount-income' if tx.is_income else 'amount-expense' }}">
+
+                    <strong>
+                        {{ '+' if tx.is_income else '-' }}
+                        Rp {{ "{:,.0f}".format(tx.amount or 0) }}
+                    </strong>
+
+                    {% if tx.type_label %}
+
+                    <small>
+                        {{ tx.type_label }}
+                    </small>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+
+            {% else %}
+
+            <div class="empty-state">
+
+                <div class="empty-icon">
+                    ◷
+                </div>
+
+                <strong>
+                    Belum ada transaksi
+                </strong>
+
+                <p>
+                    Aktivitas keuanganmu akan muncul di sini.
+                </p>
+
+            </div>
+
+            {% endfor %}
+
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         INFORMATION
+    ====================================================== -->
+
+    <section class="info-banner">
+
+        <div class="info-icon">
+            !
+        </div>
+
+
+        <div>
+
+            <strong>
+                FINORA adalah aplikasi simulasi
+            </strong>
+
+            <p>
+                Seluruh transaksi di dalam aplikasi
+                merupakan simulasi dan tidak melibatkan
+                uang sungguhan.
+            </p>
+
+        </div>
+
+    </section>
+
+
+</div>
+
+
+<!-- =========================================================
+     COPY ACCOUNT NUMBER
+========================================================== -->
+
+<script>
+
+function copyAccountNumber() {
+
+    var target = document.getElementById("accountNumber");
+
+    var button = document.getElementById("copyAccountBtn");
+
+    if (!target) {
+        return;
+    }
+
+    // Salin nomor asli (tanpa spasi pemisah tampilan).
+    var value = (
+        target.getAttribute("data-raw") ||
+        target.innerText
+    ).replace(/\s+/g, "");
+
+    if (!value || value === "-") {
+
+        alert("Nomor rekening belum tersedia.");
+
+        return;
+    }
+
+    function done() {
+
+        if (!button) {
+            return;
+        }
+
+        var original = button.innerText;
+
+        button.innerText = "Tersalin ✓";
+
+        button.classList.add("is-copied");
+
+        setTimeout(function () {
+
+            button.innerText = original;
+
+            button.classList.remove("is-copied");
+
+        }, 1800);
+    }
+
+    function fallback() {
+
+        var textarea = document.createElement("textarea");
+
+        textarea.value = value;
+
+        document.body.appendChild(textarea);
+
+        textarea.select();
+
+        try {
+            document.execCommand("copy");
+        } catch (e) {}
+
+        textarea.remove();
+
+        done();
+    }
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+
+        navigator.clipboard.writeText(value)
+            .then(done)
+            .catch(fallback);
+
+    } else {
+
+        fallback();
+    }
+}
+
+</script>
+
+
+{% endblock %}

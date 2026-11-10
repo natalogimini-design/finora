@@ -1,0 +1,257 @@
+{% extends "base.html" %}
+
+{% block title %}
+FINORA — Transfer
+{% endblock %}
+
+
+{% block content %}
+
+<div class="page-container">
+
+    <!-- HEADER -->
+    <section class="page-header">
+        <span class="eyebrow">FINORA TRANSFER</span>
+        <h1>Transfer saldo</h1>
+        <p>Kirim saldo simulasi ke rekening FINORA lainnya.</p>
+    </section>
+
+
+    <!-- SALDO -->
+    <section class="mini-balance-card">
+        <div>
+            <span>Saldo tersedia</span>
+            <strong>
+                Rp {{ "{:,.0f}".format(account.balance or 0).replace(",", ".") }}
+            </strong>
+        </div>
+
+        <div class="mini-account">
+            {{ account.account_number }}
+        </div>
+    </section>
+
+
+    <!-- FORM TRANSFER -->
+    <section class="form-card">
+
+        <div class="form-card-title">
+            <span class="quick-icon">↗</span>
+            <div>
+                <h2>Kirim saldo</h2>
+                <p>Isi informasi penerima di bawah.</p>
+            </div>
+        </div>
+
+        <form
+            id="transferForm"
+            method="POST"
+            action="{{ url_for('transfer.transfer_page') }}"
+        >
+
+            <div class="form-group">
+                <label for="account_number">Nomor rekening tujuan</label>
+                <input
+                    type="text"
+                    id="account_number"
+                    name="account_number"
+                    maxlength="30"
+                    placeholder="Masukkan nomor rekening"
+                    autocomplete="off"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="amount">Nominal transfer</label>
+                <div class="money-input">
+                    <span>Rp</span>
+                    <input
+                        type="number"
+                        id="amount"
+                        name="amount"
+                        min="1"
+                        step="0.01"
+                        placeholder="0"
+                        required
+                    >
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="note">
+                    Catatan <span>(opsional)</span>
+                </label>
+                <textarea
+                    id="note"
+                    name="note"
+                    maxlength="255"
+                    placeholder="Contoh: Uang makan"
+                    rows="3"
+                ></textarea>
+            </div>
+
+            <button type="submit" class="primary-button" id="transferSubmit">
+                Konfirmasi transfer
+            </button>
+
+        </form>
+    </section>
+
+
+    <!-- RIWAYAT -->
+    <section class="history-section">
+
+        <div class="section-heading">
+            <div>
+                <span class="eyebrow">AKTIVITAS</span>
+                <h2>Riwayat transfer</h2>
+            </div>
+        </div>
+
+        <div class="transaction-card">
+
+            {% for item in transfer_history %}
+
+            <div class="transaction-row">
+
+                <div class="transaction-left">
+
+                    <div class="transaction-icon
+                        {{ 'transaction-expense' if item.transfer_type == 'Keluar' else 'transaction-income' }}">
+                        {{ '↗' if item.transfer_type == 'Keluar' else '↙' }}
+                    </div>
+
+                    <div class="transaction-info">
+
+                        {% if item.transfer_type == 'Keluar' %}
+                        <strong>Transfer keluar</strong>
+                        <small>Ke {{ item.receiver_number }}</small>
+                        {% else %}
+                        <strong>Transfer masuk</strong>
+                        <small>Dari {{ item.sender_number }}</small>
+                        {% endif %}
+
+                        {% if item.note %}
+                        <small>{{ item.note }}</small>
+                        {% endif %}
+
+                        <small>{{ item.created_at.strftime("%d %b %Y, %H:%M") if item.created_at else "-" }}</small>
+
+                    </div>
+
+                </div>
+
+                <div class="transaction-amount">
+                    <strong style="color: {{ 'var(--danger)' if item.transfer_type == 'Keluar' else 'var(--success)' }};">
+                        {{ "-" if item.transfer_type == "Keluar" else "+" }}Rp {{ "{:,.0f}".format(item.amount or 0).replace(",", ".") }}
+                    </strong>
+                </div>
+
+            </div>
+
+            {% else %}
+
+            <div class="empty-state">
+                <div class="empty-icon">⇄</div>
+                <strong>Belum ada transfer</strong>
+                <p>Riwayat transfer akan muncul di sini.</p>
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+    </section>
+
+</div>
+
+
+<!-- ========================= -->
+<!-- MODAL KONFIRMASI -->
+<!-- ========================= -->
+
+<div id="confirmModal" class="fin-modal" aria-hidden="true">
+    <div class="fin-modal__box" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+
+        <div class="fin-modal__icon">?</div>
+
+        <h3 id="confirmTitle">Konfirmasi transfer</h3>
+        <p id="confirmText">Apakah data transfer sudah benar?</p>
+
+        <div class="fin-modal__summary">
+            <div>
+                <span>Rekening tujuan</span>
+                <strong id="sumAccount">-</strong>
+            </div>
+            <div>
+                <span>Nominal</span>
+                <strong id="sumAmount">-</strong>
+            </div>
+        </div>
+
+        <div class="fin-modal__actions">
+            <button type="button" id="confirmCancel" class="fin-btn-cancel">Batal</button>
+            <button type="button" id="confirmOk" class="fin-btn-ok">Ya, kirim</button>
+        </div>
+
+    </div>
+</div>
+
+
+<script>
+(function () {
+    const form      = document.getElementById("transferForm");
+    const modal     = document.getElementById("confirmModal");
+    const okBtn     = document.getElementById("confirmOk");
+    const cancelBtn = document.getElementById("confirmCancel");
+    let submitting  = false;
+
+    function rupiah(value) {
+        const n = parseFloat(value);
+        if (isNaN(n)) return "-";
+        return "Rp " + n.toLocaleString("id-ID", { maximumFractionDigits: 2 });
+    }
+
+    function openModal() {
+        document.getElementById("sumAccount").textContent =
+            document.getElementById("account_number").value.trim();
+        document.getElementById("sumAmount").textContent =
+            rupiah(document.getElementById("amount").value);
+
+        modal.classList.add("show");
+        modal.setAttribute("aria-hidden", "false");
+        okBtn.focus();
+    }
+
+    function closeModal() {
+        modal.classList.remove("show");
+        modal.setAttribute("aria-hidden", "true");
+    }
+
+    form.addEventListener("submit", function (e) {
+        if (submitting) return;          // sudah dikonfirmasi, lanjut kirim
+        e.preventDefault();
+        openModal();
+    });
+
+    okBtn.addEventListener("click", function () {
+        submitting = true;
+        okBtn.disabled = true;           // cegah klik ganda
+        okBtn.textContent = "Memproses...";
+        form.submit();
+    });
+
+    cancelBtn.addEventListener("click", closeModal);
+
+    modal.addEventListener("click", function (e) {
+        if (e.target === modal) closeModal();
+    });
+
+    document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape" && modal.classList.contains("show")) closeModal();
+    });
+})();
+</script>
+
+{% endblock %}

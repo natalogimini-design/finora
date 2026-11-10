@@ -1,0 +1,642 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<style>
+
+    /* =====================================================
+       REGISTER PAGE
+    ===================================================== */
+
+    .register-page {
+        min-height: calc(100vh - 100px);
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        padding: 40px 20px;
+    }
+
+
+    /* =====================================================
+       CARD
+    ===================================================== */
+
+    .register-card {
+        width: 100%;
+        max-width: 460px;
+
+        background: #ffffff;
+
+        border-radius: 22px;
+
+        padding: 34px;
+
+        box-shadow:
+            0 15px 45px
+            rgba(7, 26, 48, 0.14);
+    }
+
+
+    /* =====================================================
+       HEADER
+    ===================================================== */
+
+    .register-header {
+        text-align: center;
+
+        margin-bottom: 28px;
+    }
+
+    .register-logo {
+        width: 52px;
+        height: 52px;
+
+        margin: 0 auto 13px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        border-radius: 14px;
+
+        background: #dcae32;
+
+        color: #0b223f;
+
+        font-size: 23px;
+        font-weight: 800;
+    }
+
+    .register-header h1 {
+        margin: 0;
+
+        color: #0b223f;
+
+        font-size: 25px;
+
+        font-weight: 700;
+    }
+
+    .register-header p {
+        margin-top: 7px;
+
+        color: #7a8089;
+
+        font-size: 13px;
+    }
+
+
+    /* =====================================================
+       FLASH MESSAGE
+    ===================================================== */
+
+    .flash-message {
+        padding: 12px 14px;
+
+        border-radius: 10px;
+
+        margin-bottom: 18px;
+
+        font-size: 13px;
+    }
+
+    .flash-message.success {
+        background: #e7f6ec;
+        color: #176b35;
+    }
+
+    .flash-message.error {
+        background: #fde8e8;
+        color: #a51d1d;
+    }
+
+
+    /* =====================================================
+       FORM
+    ===================================================== */
+
+    .register-form {
+        display: flex;
+
+        flex-direction: column;
+
+        gap: 17px;
+    }
+
+
+    .form-group {
+        display: flex;
+
+        flex-direction: column;
+
+        gap: 7px;
+    }
+
+
+    .form-group label {
+        color: #344054;
+
+        font-size: 13px;
+
+        font-weight: 600;
+    }
+
+
+    /* =====================================================
+       INPUT
+    ===================================================== */
+
+    .input-wrapper {
+        position: relative;
+    }
+
+
+    .input-wrapper input {
+        width: 100%;
+
+        height: 48px;
+
+        padding:
+            0 48px 0 14px;
+
+        border:
+            1px solid #d9dde3;
+
+        border-radius: 11px;
+
+        background: #ffffff;
+
+        color: #172033;
+
+        font-size: 14px;
+
+        outline: none;
+
+        transition: 0.2s;
+    }
+
+
+    .input-wrapper input:focus {
+        border-color: #dcae32;
+
+        box-shadow:
+            0 0 0 3px
+            rgba(220, 174, 50, 0.13);
+    }
+
+
+    /* =====================================================
+       SHOW PASSWORD / PIN
+    ===================================================== */
+
+    .toggle-password {
+        position: absolute;
+
+        right: 12px;
+
+        top: 50%;
+
+        transform:
+            translateY(-50%);
+
+        border: none;
+
+        background: transparent;
+
+        color: #7a8089;
+
+        font-size: 12px;
+
+        font-weight: 600;
+
+        cursor: pointer;
+
+        padding: 5px;
+    }
+
+
+    .toggle-password:hover {
+        color: #0b223f;
+    }
+
+
+    /* =====================================================
+       INFO PIN
+    ===================================================== */
+
+    .input-info {
+        color: #8a9099;
+
+        font-size: 11px;
+
+        line-height: 1.4;
+    }
+
+
+    /* =====================================================
+       CREATE ACCOUNT BUTTON
+    ===================================================== */
+
+    .register-button {
+        width: 100%;
+
+        height: 49px;
+
+        margin-top: 5px;
+
+        border: none;
+
+        border-radius: 11px;
+
+        background: #dcae32;
+
+        color: #0b223f;
+
+        font-size: 14px;
+
+        font-weight: 700;
+
+        cursor: pointer;
+
+        transition: 0.2s;
+    }
+
+
+    .register-button:hover {
+        background: #c99d27;
+
+        transform:
+            translateY(-1px);
+    }
+
+
+    /* =====================================================
+       BACK TO LOGIN
+    ===================================================== */
+
+    .back-login {
+        width: 100%;
+
+        height: 47px;
+
+        margin-top: 10px;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        border:
+            1px solid #d9dde3;
+
+        border-radius: 11px;
+
+        background: #ffffff;
+
+        color: #0b223f;
+
+        text-decoration: none;
+
+        font-size: 13px;
+
+        font-weight: 600;
+
+        transition: 0.2s;
+    }
+
+
+    .back-login:hover {
+        background: #f7f8fa;
+
+        border-color: #c5cad2;
+    }
+
+
+    /* =====================================================
+       FOOTER TEXT
+    ===================================================== */
+
+    .login-info {
+        text-align: center;
+
+        margin-top: 20px;
+
+        color: #7a8089;
+
+        font-size: 12px;
+    }
+
+
+    .login-info a {
+        color: #b38718;
+
+        font-weight: 700;
+
+        text-decoration: none;
+    }
+
+
+    .login-info a:hover {
+        text-decoration: underline;
+    }
+
+
+    /* =====================================================
+       MOBILE
+    ===================================================== */
+
+    @media (max-width: 600px) {
+
+        .register-page {
+            padding:
+                25px 15px;
+        }
+
+        .register-card {
+            padding: 26px 21px;
+
+            border-radius: 18px;
+        }
+
+        .register-header h1 {
+            font-size: 22px;
+        }
+
+    }
+
+</style>
+
+
+<div class="register-page">
+
+
+    <div class="register-card">
+
+
+        <!-- =================================================
+             HEADER
+        ================================================== -->
+
+        <div class="register-header">
+
+            <div class="register-logo">
+                F
+            </div>
+
+            <h1>
+                Create Account
+            </h1>
+
+            <p>
+                Buat akun untuk mulai menggunakan FINORA
+            </p>
+
+        </div>
+
+
+        <!-- =================================================
+             FLASH MESSAGE
+        ================================================== -->
+
+        {% with messages =
+            get_flashed_messages(with_categories=true) %}
+
+            {% if messages %}
+
+                {% for category, message in messages %}
+
+                    <div class="flash-message {{ category }}">
+
+                        {{ message }}
+
+                    </div>
+
+                {% endfor %}
+
+            {% endif %}
+
+        {% endwith %}
+
+
+        <!-- =================================================
+             FORM
+        ================================================== -->
+
+        <form
+            method="POST"
+            class="register-form"
+        >
+
+
+            <!-- NAMA -->
+
+            <div class="form-group">
+
+                <label for="name">
+                    Nama
+                </label>
+
+                <div class="input-wrapper">
+
+                    <input
+                        type="text"
+                        id="name"
+                        name="name"
+                        placeholder="Masukkan nama lengkap"
+                        value="{{ request.form.get('name', '') }}"
+                        required
+                    >
+
+                </div>
+
+            </div>
+
+
+            <!-- EMAIL -->
+
+            <div class="form-group">
+
+                <label for="email">
+                    Email
+                </label>
+
+                <div class="input-wrapper">
+
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        placeholder="Masukkan email"
+                        value="{{ request.form.get('email', '') }}"
+                        required
+                    >
+
+                </div>
+
+            </div>
+
+
+            <!-- PASSWORD -->
+
+            <div class="form-group">
+
+                <label for="password">
+                    Password
+                </label>
+
+                <div class="input-wrapper">
+
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        placeholder="Masukkan password"
+                        required
+                    >
+
+                    <button
+                        type="button"
+                        class="toggle-password"
+                        onclick="toggleInput(
+                            'password',
+                            this
+                        )"
+                    >
+                        Lihat
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- PIN -->
+
+            <div class="form-group">
+
+                <label for="pin">
+                    PIN Transaksi
+                </label>
+
+                <div class="input-wrapper">
+
+                    <input
+                        type="password"
+                        id="pin"
+                        name="pin"
+                        maxlength="6"
+                        minlength="6"
+                        inputmode="numeric"
+                        pattern="[0-9]{6}"
+                        placeholder="6 digit PIN"
+                        required
+                    >
+
+                    <button
+                        type="button"
+                        class="toggle-password"
+                        onclick="toggleInput(
+                            'pin',
+                            this
+                        )"
+                    >
+                        Lihat
+                    </button>
+
+                </div>
+
+                <div class="input-info">
+
+                    PIN transaksi harus terdiri dari
+                    tepat 6 angka.
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 CREATE ACCOUNT
+            ================================================== -->
+
+            <button
+                type="submit"
+                class="register-button"
+            >
+                Buat Akun
+            </button>
+
+
+        </form>
+
+
+        <!-- =================================================
+             BACK TO LOGIN
+        ================================================== -->
+
+        <a
+            href="{{ url_for('auth.login') }}"
+            class="back-login"
+        >
+            ← Kembali ke Login
+        </a>
+
+
+        <!-- =================================================
+             LOGIN LINK
+        ================================================== -->
+
+        <div class="login-info">
+
+            Sudah memiliki akun?
+
+            <a
+                href="{{ url_for('auth.login') }}"
+            >
+                Login
+            </a>
+
+        </div>
+
+
+    </div>
+
+</div>
+
+
+<script>
+
+function toggleInput(
+    inputId,
+    button
+) {
+
+    const input =
+        document.getElementById(inputId);
+
+
+    if (input.type === "password") {
+
+        input.type = "text";
+
+        button.textContent =
+            "Sembunyikan";
+
+    } else {
+
+        input.type = "password";
+
+        button.textContent =
+            "Lihat";
+
+    }
+
+}
+
+</script>
+
+
+{% endblock %}

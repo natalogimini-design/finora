@@ -1,0 +1,1123 @@
+{% extends "base.html" %}
+
+{% block title %}
+Investasi — FINORA
+{% endblock %}
+
+
+{% block content %}
+
+<div class="page-container inv-page">
+
+
+    <!-- ========================= -->
+    <!-- HEADER -->
+    <!-- ========================= -->
+
+    <div class="page-header">
+
+        <span class="eyebrow">
+            FINORA INVESTMENT
+        </span>
+
+        <h1>
+            Investasi
+        </h1>
+
+        <p>
+            Belajar berinvestasi dengan dana simulasi. Beli aset,
+            pantau pergerakan harga, lalu uji skenario jangka panjang.
+        </p>
+
+    </div>
+
+
+    <!-- ========================= -->
+    <!-- TAB -->
+    <!-- ========================= -->
+
+    <div class="inv-tabs" role="tablist">
+
+        <button type="button" class="inv-tab is-active"
+                data-tab="invPanelPortfolio" role="tab">
+            Portofolio
+        </button>
+
+        <button type="button" class="inv-tab"
+                data-tab="invPanelSimulator" role="tab">
+            Simulator
+        </button>
+
+    </div>
+
+
+
+    <!-- ======================================================= -->
+    <!-- PANEL 1 : PORTOFOLIO                                     -->
+    <!-- ======================================================= -->
+
+    <div id="invPanelPortfolio" class="inv-panel">
+
+
+        <!-- RINGKASAN -->
+
+        <div class="inv-summary">
+
+            <div class="inv-sum-item">
+                <span>Nilai portofolio</span>
+                <strong>{{ summary.value }}</strong>
+            </div>
+
+            <div class="inv-sum-item">
+                <span>Total modal</span>
+                <strong>{{ summary.capital }}</strong>
+            </div>
+
+            <div class="inv-sum-item">
+                <span>Untung / rugi</span>
+                <strong class="{{ 'is-up' if summary.is_up else 'is-down' }}">
+                    {{ summary.pnl }}
+                    <small>{{ summary.pnl_pct }}</small>
+                </strong>
+            </div>
+
+            <div class="inv-sum-item">
+                <span>Saldo tersedia</span>
+                <strong>{{ balance_fmt }}</strong>
+            </div>
+
+        </div>
+
+
+        <!-- PASAR -->
+
+        <div class="section-heading">
+
+            <div>
+                <span class="eyebrow">PASAR</span>
+                <h2>Pergerakan harga</h2>
+            </div>
+
+        </div>
+
+        <p class="inv-help">
+            Harga disimulasikan dan bergerak terus. Waktu pasar dipercepat:
+            {{ (seconds_per_day // 60) if seconds_per_day >= 60 else seconds_per_day }}
+            {{ 'menit' if seconds_per_day >= 60 else 'detik' }} nyata = 1 hari simulasi.
+            Indeks dimulai dari 100.
+        </p>
+
+        <div class="inv-market">
+
+            {% for m in market %}
+
+            <div class="inv-asset">
+
+                <div class="inv-asset-top">
+
+                    <strong>{{ m.name }}</strong>
+
+                    <span class="inv-badge inv-risk-{{ m.risk_level }}">
+                        {{ m.risk }}
+                    </span>
+
+                </div>
+
+                <div class="inv-asset-index">{{ m.index }}</div>
+
+                <svg class="inv-spark {{ 'up' if m.ch30_up else 'down' }}"
+                     viewBox="0 0 100 32" preserveAspectRatio="none"
+                     aria-hidden="true">
+                    <polyline points="{{ m.spark }}"></polyline>
+                </svg>
+
+                <div class="inv-asset-changes">
+
+                    <span>
+                        30 hari
+                        <b class="{{ 'is-up' if m.ch30_up else 'is-down' }}">{{ m.ch30 }}</b>
+                    </span>
+
+                    <span>
+                        1 tahun
+                        <b class="{{ 'is-up' if m.ch365_up else 'is-down' }}">{{ m.ch365 }}</b>
+                    </span>
+
+                </div>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+
+        <!-- BELI -->
+
+        <div class="inv-two">
+
+            <div class="form-card">
+
+                <div class="form-card-title">
+
+                    <div>
+                        <h2>Beli investasi</h2>
+                        <p>Dana diambil dari saldo rekening FINORA.</p>
+                    </div>
+
+                </div>
+
+                <form
+                    id="buyForm"
+                    class="js-confirm-form"
+                    method="POST"
+                    action="{{ url_for('investments.buy') }}"
+                    data-balance="{{ balance }}"
+                >
+
+                    <div class="form-group">
+
+                        <label for="buyAsset">Jenis aset</label>
+
+                        <select id="buyAsset" name="asset" required>
+                            {% for key, a in assets.items() %}
+                            <option value="{{ key }}">
+                                {{ a.name }} — risiko {{ a.risk|lower }}
+                            </option>
+                            {% endfor %}
+                        </select>
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label for="buyAmount">Nominal</label>
+
+                        <div class="money-input">
+                            <span>Rp</span>
+                            <input
+                                type="number"
+                                id="buyAmount"
+                                name="amount"
+                                min="1"
+                                max="{{ max_buy }}"
+                                step="1"
+                                placeholder="0"
+                                required
+                            >
+                        </div>
+
+                    </div>
+
+                    <div class="inv-hint" id="buyHint"></div>
+
+                    <div class="inv-error" id="buyError" hidden></div>
+
+                    <button type="submit" class="primary-button">
+                        Beli sekarang
+                    </button>
+
+                </form>
+
+            </div>
+
+
+            <div class="inv-info-card">
+
+                <h3>Cara kerja simulasi</h3>
+
+                <ul>
+                    <li>Harga tiap aset bergerak acak dengan tren dan fluktuasi sesuai profil risikonya.</li>
+                    <li>Biaya beli, biaya jual, dan pajak keuntungan ikut dihitung saat transaksi.</li>
+                    <li>Aset berisiko tinggi bisa turun tajam. Nilainya bisa lebih kecil dari modal.</li>
+                    <li>Semua angka hanya asumsi untuk belajar, bukan data pasar sungguhan dan bukan rekomendasi investasi.</li>
+                </ul>
+
+            </div>
+
+        </div>
+
+
+        <!-- DAFTAR -->
+
+        <div class="section-heading">
+
+            <div>
+                <span class="eyebrow">PORTOFOLIO</span>
+                <h2>Investasi kamu</h2>
+            </div>
+
+        </div>
+
+        <div class="transaction-card">
+
+            {% for h in holdings %}
+
+            <div class="inv-holding">
+
+                <div class="inv-holding-main">
+
+                    <div class="inv-holding-title">
+
+                        <strong>{{ h.name }}</strong>
+
+                        <span class="inv-badge inv-risk-{{ h.risk_level }}">
+                            {{ h.risk }}
+                        </span>
+
+                    </div>
+
+                    <small>{{ h.date }} · {{ h.days }} hari simulasi</small>
+
+                </div>
+
+                <svg class="inv-spark {{ 'up' if h.is_up else 'down' }}"
+                     viewBox="0 0 100 32" preserveAspectRatio="none"
+                     aria-hidden="true">
+                    <polyline points="{{ h.spark }}"></polyline>
+                </svg>
+
+                <div class="inv-holding-value">
+
+                    <strong>{{ h.value }}</strong>
+
+                    <small>Modal {{ h.capital }}</small>
+
+                    <small class="{{ 'is-up' if h.is_up else 'is-down' }}">
+                        {{ h.pnl }} ({{ h.pnl_pct }})
+                    </small>
+
+                </div>
+
+                {% if h.id is not none %}
+
+                <form
+                    class="js-confirm-form inv-sell-form"
+                    method="POST"
+                    action="{{ url_for('investments.sell', investment_id=h.id) }}"
+                    data-title="Cairkan investasi"
+                    data-text="Dana akan masuk ke saldo rekening kamu."
+                    data-ok="Ya, cairkan"
+                    data-rows='{{ [["Aset", h.name], ["Nilai saat ini", h.value], ["Estimasi diterima", h.proceeds]]|tojson }}'
+                >
+                    <button type="submit" class="inv-sell-btn">
+                        Cairkan
+                    </button>
+                </form>
+
+                {% endif %}
+
+            </div>
+
+            {% else %}
+
+            <div class="empty-state">
+
+                <div class="empty-icon">↗</div>
+
+                <strong>Belum ada investasi</strong>
+
+                <p>Pilih aset di atas untuk mulai berinvestasi dengan dana simulasi.</p>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+        <p class="inv-help">
+            Estimasi diterima sudah memperhitungkan biaya jual dan pajak keuntungan.
+        </p>
+
+    </div>
+
+
+
+    <!-- ======================================================= -->
+    <!-- PANEL 2 : SIMULATOR                                      -->
+    <!-- ======================================================= -->
+
+    <div id="invPanelSimulator" class="inv-panel" hidden>
+
+        <div class="investment-grid">
+
+
+            <!-- FORM -->
+
+            <div class="form-card">
+
+                <div class="form-card-title">
+
+                    <div>
+                        <h2>Parameter simulasi</h2>
+                        <p>Hasil dihitung dari 1.000 skenario acak.</p>
+                    </div>
+
+                </div>
+
+                <form id="simForm" novalidate>
+
+                    <div class="form-group">
+
+                        <label for="simAsset">Profil aset</label>
+
+                        <select id="simAsset">
+                            {% for key, a in assets.items() %}
+                            <option value="{{ key }}">{{ a.name }}</option>
+                            {% endfor %}
+                            <option value="custom">Atur sendiri</option>
+                        </select>
+
+                    </div>
+
+                    <div class="form-group">
+                        <label for="simInitial">Modal awal</label>
+                        <div class="money-input">
+                            <span>Rp</span>
+                            <input type="number" id="simInitial" value="5000000" min="0" step="1000">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="simMonthly">Setoran per bulan</label>
+                        <div class="money-input">
+                            <span>Rp</span>
+                            <input type="number" id="simMonthly" value="500000" min="0" step="1000">
+                        </div>
+                    </div>
+
+                    <div class="inv-row">
+
+                        <div class="form-group">
+                            <label for="simReturn">Return per tahun (%)</label>
+                            <input type="number" id="simReturn" value="8" step="0.1">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="simVol">Volatilitas (%)</label>
+                            <input type="number" id="simVol" value="8" min="0" step="0.1">
+                        </div>
+
+                    </div>
+
+                    <div class="inv-row">
+
+                        <div class="form-group">
+                            <label for="simYears">Jangka waktu (tahun)</label>
+                            <input type="number" id="simYears" value="10" min="1" max="40" step="1">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="simInflation">Inflasi per tahun (%)</label>
+                            <input type="number" id="simInflation" value="3" min="0" step="0.1">
+                        </div>
+
+                    </div>
+
+                    <div class="form-group">
+                        <label for="simTarget">
+                            Target dana <span>(opsional, nilai uang hari ini)</span>
+                        </label>
+                        <div class="money-input">
+                            <span>Rp</span>
+                            <input type="number" id="simTarget" value="" min="0" step="1000" placeholder="0">
+                        </div>
+                    </div>
+
+                    <div class="inv-hint" id="simHint"></div>
+
+                    <div class="inv-error" id="simError" hidden></div>
+
+                    <button type="submit" class="primary-button">
+                        Hitung simulasi
+                    </button>
+
+                </form>
+
+            </div>
+
+
+            <!-- HASIL -->
+
+            <div class="investment-result-card">
+
+                <span class="eyebrow">HASIL SIMULASI</span>
+
+                <h2>Skenario moderat (median)</h2>
+
+                <strong id="resValue" class="investment-total">Rp 0</strong>
+
+                <div class="investment-stat">
+                    <span>Total setoran</span>
+                    <strong id="resDeposit">Rp 0</strong>
+                </div>
+
+                <div class="investment-stat">
+                    <span>Keuntungan bersih (median)</span>
+                    <strong id="resProfit">Rp 0</strong>
+                </div>
+
+                <div class="investment-stat">
+                    <span>Setara daya beli hari ini</span>
+                    <strong id="resReal">Rp 0</strong>
+                </div>
+
+                <div class="investment-stat">
+                    <span>Skenario pesimis (10%)</span>
+                    <strong id="resLow">Rp 0</strong>
+                </div>
+
+                <div class="investment-stat">
+                    <span>Skenario optimis (90%)</span>
+                    <strong id="resHigh">Rp 0</strong>
+                </div>
+
+                <div class="investment-stat">
+                    <span>Peluang rugi</span>
+                    <strong id="resLoss">0%</strong>
+                </div>
+
+                <div class="investment-stat" id="resTargetRow" hidden>
+                    <span>Peluang capai target</span>
+                    <strong id="resTarget">0%</strong>
+                </div>
+
+                <div class="investment-note">
+                    Semua nilai sudah dikurangi biaya beli, biaya jual, dan pajak
+                    keuntungan sesuai profil aset. Ini simulasi dengan asumsi,
+                    bukan prediksi dan bukan rekomendasi investasi.
+                </div>
+
+            </div>
+
+
+        </div>
+
+
+        <!-- GRAFIK -->
+
+        <div class="form-card inv-chart-card">
+
+            <div class="form-card-title">
+
+                <div>
+                    <h2>Proyeksi pertumbuhan</h2>
+                    <p>Garis tengah adalah median. Area emas mencakup 80% skenario (persentil 10 sampai 90).</p>
+                </div>
+
+            </div>
+
+            <div class="inv-legend">
+                <span><i class="lg-band"></i> Rentang 10%–90%</span>
+                <span><i class="lg-med"></i> Median</span>
+                <span><i class="lg-dep"></i> Total setoran</span>
+            </div>
+
+            <div id="simChart" class="inv-chart"></div>
+
+        </div>
+
+
+        <!-- TABEL -->
+
+        <div class="section-heading">
+
+            <div>
+                <span class="eyebrow">RINCIAN</span>
+                <h2>Per tahun</h2>
+            </div>
+
+        </div>
+
+        <div class="inv-table-wrap">
+
+            <table class="inv-table">
+
+                <thead>
+                    <tr>
+                        <th>Tahun</th>
+                        <th>Setoran</th>
+                        <th>Pesimis</th>
+                        <th>Median</th>
+                        <th>Optimis</th>
+                        <th>Median (daya beli)</th>
+                    </tr>
+                </thead>
+
+                <tbody id="simTable"></tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+
+</div>
+
+
+
+<!-- ========================= -->
+<!-- MODAL KONFIRMASI -->
+<!-- ========================= -->
+
+<div id="invConfirm" class="fin-modal" aria-hidden="true">
+
+    <div class="fin-modal__box" role="dialog" aria-modal="true"
+         aria-labelledby="invConfirmTitle">
+
+        <div class="fin-modal__icon">?</div>
+
+        <h3 id="invConfirmTitle">Konfirmasi</h3>
+
+        <p id="invConfirmText"></p>
+
+        <div class="fin-modal__summary" id="invConfirmRows"></div>
+
+        <div class="fin-modal__actions">
+            <button type="button" id="invConfirmCancel" class="fin-btn-cancel">Batal</button>
+            <button type="button" id="invConfirmOk" class="fin-btn-ok">Ya, lanjut</button>
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+    window.INV_ASSETS = {{ assets|tojson }};
+</script>
+
+{% raw %}
+<script>
+(function () {
+    "use strict";
+
+    var ASSETS = window.INV_ASSETS || {};
+
+    function $(id) { return document.getElementById(id); }
+
+    function num(el) {
+        var raw = el.value;
+        if (raw === "" || raw === null) { return 0; }
+        var n = Number(raw);
+        return isFinite(n) ? n : NaN;
+    }
+
+    function fmtRp(v) {
+        var n = Math.round(Number(v) || 0);
+        return (n < 0 ? "-" : "") + "Rp " + Math.abs(n).toLocaleString("id-ID");
+    }
+
+    function fmtShort(v) {
+        var a = Math.abs(v);
+        var s = v < 0 ? "-" : "";
+        function trim(x) { return x.toFixed(1).replace(/\.0$/, "").replace(".", ","); }
+        if (a >= 1e12) { return s + trim(a / 1e12) + " T"; }
+        if (a >= 1e9) { return s + trim(a / 1e9) + " M"; }
+        if (a >= 1e6) { return s + trim(a / 1e6) + " jt"; }
+        if (a >= 1e3) { return s + trim(a / 1e3) + " rb"; }
+        return s + Math.round(a);
+    }
+
+    function fmtPct(x) {
+        return (x * 100).toFixed(1).replace(".", ",") + "%";
+    }
+
+    function show(el, text) {
+        el.textContent = text;
+        el.hidden = !text;
+    }
+
+
+    /* =====================================================
+       TAB
+    ===================================================== */
+
+    var tabs = document.querySelectorAll(".inv-tab");
+    var panels = document.querySelectorAll(".inv-panel");
+
+    tabs.forEach(function (tab) {
+        tab.addEventListener("click", function () {
+            tabs.forEach(function (t) { t.classList.toggle("is-active", t === tab); });
+            panels.forEach(function (p) { p.hidden = (p.id !== tab.dataset.tab); });
+        });
+    });
+
+
+    /* =====================================================
+       MODAL KONFIRMASI
+    ===================================================== */
+
+    var modal = $("invConfirm");
+    var okBtn = $("invConfirmOk");
+    var cancelBtn = $("invConfirmCancel");
+    var pending = null;
+
+    function closeModal(result) {
+        modal.classList.remove("show");
+        modal.setAttribute("aria-hidden", "true");
+        if (pending) {
+            var done = pending;
+            pending = null;
+            done(result);
+        }
+    }
+
+    function confirmDialog(opt) {
+        return new Promise(function (resolve) {
+            $("invConfirmTitle").textContent = opt.title || "Konfirmasi";
+            $("invConfirmText").textContent = opt.text || "";
+            okBtn.textContent = opt.ok || "Ya, lanjut";
+
+            var box = $("invConfirmRows");
+            box.innerHTML = "";
+            (opt.rows || []).forEach(function (pair) {
+                var row = document.createElement("div");
+                var label = document.createElement("span");
+                var value = document.createElement("strong");
+                label.textContent = pair[0];
+                value.textContent = pair[1];
+                row.appendChild(label);
+                row.appendChild(value);
+                box.appendChild(row);
+            });
+            box.hidden = !(opt.rows && opt.rows.length);
+
+            pending = resolve;
+            modal.classList.add("show");
+            modal.setAttribute("aria-hidden", "false");
+            okBtn.focus();
+        });
+    }
+
+    okBtn.addEventListener("click", function () { closeModal(true); });
+    cancelBtn.addEventListener("click", function () { closeModal(false); });
+    modal.addEventListener("click", function (e) {
+        if (e.target === modal) { closeModal(false); }
+    });
+    document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape" && modal.classList.contains("show")) { closeModal(false); }
+    });
+
+    function submitConfirmed(form) {
+        form.dataset.confirmed = "1";
+        var btn = form.querySelector("button[type=submit]");
+        if (btn) { btn.disabled = true; btn.textContent = "Memproses..."; }
+        form.submit();
+    }
+
+    document.querySelectorAll(".js-confirm-form").forEach(function (form) {
+        form.addEventListener("submit", function (e) {
+            if (form.dataset.confirmed === "1") { return; }
+            e.preventDefault();
+
+            var opt;
+
+            if (form.id === "buyForm") {
+                opt = buyOptions(form);
+                if (!opt) { return; }
+            } else {
+                var rows = [];
+                try { rows = JSON.parse(form.dataset.rows || "[]"); } catch (err) { rows = []; }
+                opt = {
+                    title: form.dataset.title,
+                    text: form.dataset.text,
+                    ok: form.dataset.ok,
+                    rows: rows
+                };
+            }
+
+            confirmDialog(opt).then(function (ok) {
+                if (ok) { submitConfirmed(form); }
+            });
+        });
+    });
+
+
+    /* =====================================================
+       FORM BELI
+    ===================================================== */
+
+    var buyAsset = $("buyAsset");
+    var buyAmount = $("buyAmount");
+    var buyHint = $("buyHint");
+    var buyError = $("buyError");
+
+    function assetHint(a) {
+        return a.desc + " Estimasi return " + (a.mu * 100).toFixed(1).replace(".", ",") +
+            "%/tahun, volatilitas " + (a.sigma * 100).toFixed(1).replace(".", ",") +
+            "%. Biaya beli " + (a.buy_fee * 100).toFixed(2).replace(".", ",") +
+            "%, biaya jual " + (a.sell_fee * 100).toFixed(2).replace(".", ",") +
+            "%, pajak keuntungan " + (a.tax * 100).toFixed(0) +
+            "%. Minimum " + fmtRp(a.min) + ".";
+    }
+
+    function updateBuyHint() {
+        var a = ASSETS[buyAsset.value];
+        if (!a) { return; }
+        buyHint.textContent = assetHint(a);
+        buyAmount.min = a.min;
+        buyAmount.placeholder = String(a.min);
+    }
+
+    function buyOptions(form) {
+        var a = ASSETS[buyAsset.value];
+        var amount = Number(buyAmount.value);
+        var balance = Number(form.dataset.balance) || 0;
+
+        show(buyError, "");
+
+        if (!a) { show(buyError, "Pilih jenis aset."); return null; }
+        if (!isFinite(amount) || amount <= 0) {
+            show(buyError, "Masukkan nominal investasi."); return null;
+        }
+        if (amount < a.min) {
+            show(buyError, "Minimum pembelian " + a.name + " adalah " + fmtRp(a.min) + "."); return null;
+        }
+        if (amount > balance) {
+            show(buyError, "Saldo tidak mencukupi."); return null;
+        }
+
+        var fee = amount * a.buy_fee;
+
+        return {
+            title: "Konfirmasi pembelian",
+            text: "Pastikan data investasi sudah benar.",
+            ok: "Ya, beli",
+            rows: [
+                ["Aset", a.name],
+                ["Nominal", fmtRp(amount)],
+                ["Biaya beli", fmtRp(fee)],
+                ["Dana diinvestasikan", fmtRp(amount - fee)],
+                ["Sisa saldo", fmtRp(balance - amount)]
+            ]
+        };
+    }
+
+    buyAsset.addEventListener("change", updateBuyHint);
+    updateBuyHint();
+
+
+    /* =====================================================
+       SIMULATOR MONTE CARLO
+    ===================================================== */
+
+    var PATHS = 1000;
+
+    function mulberry32(seed) {
+        var a = seed >>> 0;
+        return function () {
+            a = (a + 0x6D2B79F5) | 0;
+            var t = Math.imul(a ^ (a >>> 15), 1 | a);
+            t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+            return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+        };
+    }
+
+    function hashString(s) {
+        var h = 2166136261;
+        for (var i = 0; i < s.length; i++) {
+            h ^= s.charCodeAt(i);
+            h = Math.imul(h, 16777619);
+        }
+        return h >>> 0;
+    }
+
+    function normalGenerator(rand) {
+        var spare = null;
+        return function () {
+            if (spare !== null) {
+                var s = spare;
+                spare = null;
+                return s;
+            }
+            var u = 0;
+            while (u === 0) { u = rand(); }
+            var v = rand();
+            var m = Math.sqrt(-2 * Math.log(u));
+            spare = m * Math.sin(2 * Math.PI * v);
+            return m * Math.cos(2 * Math.PI * v);
+        };
+    }
+
+    function percentile(sorted, q) {
+        var idx = (sorted.length - 1) * q;
+        var lo = Math.floor(idx);
+        var hi = Math.ceil(idx);
+        if (lo === hi) { return sorted[lo]; }
+        return sorted[lo] + (sorted[hi] - sorted[lo]) * (idx - lo);
+    }
+
+    function liquidate(value, deposited, p) {
+        var afterFee = value * (1 - p.sellFee);
+        var tax = p.tax * Math.max(0, afterFee - deposited);
+        return Math.max(0, afterFee - tax);
+    }
+
+    function simulate(p) {
+        var months = p.years * 12;
+        var rand = mulberry32(hashString(JSON.stringify([
+            p.initial, p.monthly, p.mu, p.sigma, p.years, p.buyFee, p.sellFee, p.tax
+        ])));
+        var normal = normalGenerator(rand);
+
+        var monthlyDrift = (Math.log(1 + p.mu) - 0.5 * p.sigma * p.sigma) / 12;
+        var monthlyVol = p.sigma / Math.sqrt(12);
+        var netFactor = 1 - p.buyFee;
+
+        var snaps = [];
+        var deposited = [];
+        var y;
+        for (y = 0; y <= p.years; y++) {
+            snaps.push(new Float64Array(PATHS));
+            deposited.push(p.initial + p.monthly * 12 * y);
+        }
+
+        for (var i = 0; i < PATHS; i++) {
+            var v = p.initial * netFactor;
+            snaps[0][i] = liquidate(v, deposited[0], p);
+
+            for (var m = 1; m <= months; m++) {
+                var r = monthlyDrift;
+                if (monthlyVol > 0) { r += monthlyVol * normal(); }
+                v = v * Math.exp(r) + p.monthly * netFactor;
+
+                if (m % 12 === 0) {
+                    var yr = m / 12;
+                    snaps[yr][i] = liquidate(v, deposited[yr], p);
+                }
+            }
+        }
+
+        var rows = [];
+        for (y = 0; y <= p.years; y++) {
+            var sorted = snaps[y].slice().sort();
+            var inflation = Math.pow(1 + p.inflation, y);
+            rows.push({
+                year: y,
+                deposited: deposited[y],
+                p10: percentile(sorted, 0.10),
+                p50: percentile(sorted, 0.50),
+                p90: percentile(sorted, 0.90),
+                real50: percentile(sorted, 0.50) / inflation
+            });
+        }
+
+        var last = snaps[p.years];
+        var finalDeposit = deposited[p.years];
+        var realFactor = Math.pow(1 + p.inflation, p.years);
+        var loss = 0;
+        var hit = 0;
+
+        for (var k = 0; k < PATHS; k++) {
+            if (last[k] < finalDeposit) { loss++; }
+            if (p.target > 0 && last[k] / realFactor >= p.target) { hit++; }
+        }
+
+        return {
+            rows: rows,
+            probLoss: loss / PATHS,
+            probTarget: hit / PATHS
+        };
+    }
+
+
+    /* ---------- grafik ---------- */
+
+    function niceStep(x) {
+        if (x <= 0) { return 1; }
+        var pow = Math.pow(10, Math.floor(Math.log(x) / Math.LN10));
+        var n = x / pow;
+        var nice = n <= 1 ? 1 : n <= 2 ? 2 : n <= 5 ? 5 : 10;
+        return nice * pow;
+    }
+
+    function drawChart(rows) {
+        var W = 720, H = 300, L = 64, R = 16, T = 14, B = 30;
+        var years = rows.length - 1;
+
+        var maxVal = 0;
+        rows.forEach(function (r) {
+            maxVal = Math.max(maxVal, r.p90, r.deposited);
+        });
+        if (maxVal <= 0) { maxVal = 1; }
+
+        var step = niceStep(maxVal / 4);
+        var top = step * 4;
+
+        function xs(i) { return L + (W - L - R) * (years === 0 ? 0 : i / years); }
+        function ys(v) { return T + (H - T - B) * (1 - Math.max(0, v) / top); }
+
+        var out = [];
+        out.push('<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Grafik proyeksi investasi" preserveAspectRatio="xMidYMid meet">');
+
+        var g;
+        for (g = 0; g <= 4; g++) {
+            var gv = step * g;
+            var gy = ys(gv).toFixed(1);
+            out.push('<line class="inv-grid" x1="' + L + '" x2="' + (W - R) + '" y1="' + gy + '" y2="' + gy + '"/>');
+            out.push('<text class="inv-axis" x="' + (L - 8) + '" y="' + (Number(gy) + 4) + '" text-anchor="end">' + fmtShort(gv) + '</text>');
+        }
+
+        var every = Math.max(1, Math.ceil(years / 8));
+        for (var i = 0; i <= years; i += every) {
+            out.push('<text class="inv-axis" x="' + xs(i).toFixed(1) + '" y="' + (H - 8) + '" text-anchor="middle">' + i + ' th</text>');
+        }
+
+        var upper = rows.map(function (r, i) { return xs(i).toFixed(1) + "," + ys(r.p90).toFixed(1); });
+        var lower = rows.map(function (r, i) { return xs(i).toFixed(1) + "," + ys(r.p10).toFixed(1); }).reverse();
+        out.push('<polygon class="inv-band" points="' + upper.concat(lower).join(" ") + '"/>');
+
+        var dep = rows.map(function (r, i) { return xs(i).toFixed(1) + "," + ys(r.deposited).toFixed(1); });
+        out.push('<polyline class="inv-line-dep" points="' + dep.join(" ") + '"/>');
+
+        var med = rows.map(function (r, i) { return xs(i).toFixed(1) + "," + ys(r.p50).toFixed(1); });
+        out.push('<polyline class="inv-line-med" points="' + med.join(" ") + '"/>');
+
+        out.push('</svg>');
+        $("simChart").innerHTML = out.join("");
+    }
+
+
+    /* ---------- tabel ---------- */
+
+    function drawTable(rows) {
+        var body = $("simTable");
+        body.innerHTML = "";
+
+        rows.forEach(function (r) {
+            var tr = document.createElement("tr");
+            [
+                String(r.year),
+                fmtRp(r.deposited),
+                fmtRp(r.p10),
+                fmtRp(r.p50),
+                fmtRp(r.p90),
+                fmtRp(r.real50)
+            ].forEach(function (text, idx) {
+                var td = document.createElement("td");
+                td.textContent = text;
+                if (idx === 3) { td.className = "is-strong"; }
+                tr.appendChild(td);
+            });
+            body.appendChild(tr);
+        });
+    }
+
+
+    /* ---------- form ---------- */
+
+    var simAsset = $("simAsset");
+    var simReturn = $("simReturn");
+    var simVol = $("simVol");
+    var simHint = $("simHint");
+    var simError = $("simError");
+
+    function currentCosts() {
+        var a = ASSETS[simAsset.value];
+        if (!a) { return { buyFee: 0, sellFee: 0, tax: 0 }; }
+        return { buyFee: a.buy_fee, sellFee: a.sell_fee, tax: a.tax };
+    }
+
+    function applyPreset() {
+        var a = ASSETS[simAsset.value];
+        if (a) {
+            simReturn.value = (a.mu * 100).toFixed(1);
+            simVol.value = (a.sigma * 100).toFixed(1);
+            simHint.textContent = assetHint(a);
+        } else {
+            simHint.textContent = "Mode manual: tanpa biaya beli, biaya jual, maupun pajak.";
+        }
+    }
+
+    function readParams() {
+        var c = currentCosts();
+        var p = {
+            initial: num($("simInitial")),
+            monthly: num($("simMonthly")),
+            mu: num(simReturn) / 100,
+            sigma: num(simVol) / 100,
+            years: Math.round(num($("simYears"))),
+            inflation: num($("simInflation")) / 100,
+            target: num($("simTarget")),
+            buyFee: c.buyFee,
+            sellFee: c.sellFee,
+            tax: c.tax
+        };
+
+        var keys = ["initial", "monthly", "mu", "sigma", "years", "inflation", "target"];
+        for (var i = 0; i < keys.length; i++) {
+            if (!isFinite(p[keys[i]])) { return { error: "Pastikan semua kolom berisi angka yang valid." }; }
+        }
+
+        if (p.initial < 0 || p.monthly < 0) { return { error: "Modal dan setoran tidak boleh negatif." }; }
+        if (p.initial + p.monthly <= 0) { return { error: "Isi modal awal atau setoran bulanan." }; }
+        if (p.initial > 1e12 || p.monthly > 1e11) { return { error: "Nominal terlalu besar untuk disimulasikan." }; }
+        if (p.years < 1 || p.years > 40) { return { error: "Jangka waktu harus 1 sampai 40 tahun." }; }
+        if (p.mu < -0.5 || p.mu > 1) { return { error: "Return per tahun harus antara -50% dan 100%." }; }
+        if (p.sigma < 0 || p.sigma > 1.5) { return { error: "Volatilitas harus antara 0% dan 150%." }; }
+        if (p.inflation < 0 || p.inflation > 0.3) { return { error: "Inflasi harus antara 0% dan 30%." }; }
+        if (p.target < 0) { return { error: "Target tidak boleh negatif." }; }
+
+        return p;
+    }
+
+    function runSimulation() {
+        var p = readParams();
+
+        if (p.error) {
+            show(simError, p.error);
+            return;
+        }
+        show(simError, "");
+
+        var result = simulate(p);
+        var last = result.rows[result.rows.length - 1];
+
+        $("resValue").textContent = fmtRp(last.p50);
+        $("resDeposit").textContent = fmtRp(last.deposited);
+        $("resProfit").textContent = fmtRp(last.p50 - last.deposited);
+        $("resReal").textContent = fmtRp(last.real50);
+        $("resLow").textContent = fmtRp(last.p10);
+        $("resHigh").textContent = fmtRp(last.p90);
+        $("resLoss").textContent = fmtPct(result.probLoss);
+
+        var row = $("resTargetRow");
+        row.hidden = !(p.target > 0);
+        if (p.target > 0) { $("resTarget").textContent = fmtPct(result.probTarget); }
+
+        drawChart(result.rows);
+        drawTable(result.rows);
+    }
+
+    simAsset.addEventListener("change", function () {
+        applyPreset();
+        runSimulation();
+    });
+
+    [simReturn, simVol].forEach(function (el) {
+        el.addEventListener("input", function () {
+            if (simAsset.value !== "custom") {
+                simAsset.value = "custom";
+                simHint.textContent = "Mode manual: tanpa biaya beli, biaya jual, maupun pajak.";
+            }
+        });
+    });
+
+    $("simForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        runSimulation();
+    });
+
+    simAsset.value = "rdcampuran";
+    applyPreset();
+    runSimulation();
+
+    /* diekspos hanya untuk pengujian */
+    window.__invTest = { simulate: simulate, percentile: percentile, liquidate: liquidate };
+})();
+</script>
+{% endraw %}
+
+{% endblock %}
