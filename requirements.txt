@@ -1,5 +1,6 @@
+
 Flask
 mysql-connector-python
 Werkzeug
 APScheduler
-pip freeze > requirements.txt
+gunicorn
